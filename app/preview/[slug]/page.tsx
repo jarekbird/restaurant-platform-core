@@ -20,7 +20,7 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
   let restaurant;
   try {
     restaurant = loadRestaurant(slug);
-  } catch (error) {
+  } catch {
     notFound();
   }
 
