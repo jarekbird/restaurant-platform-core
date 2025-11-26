@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { themes, getTheme, type Theme } from '@/lib/themes';
+import { themes, getTheme } from '@/lib/themes';
 
 describe('Theme Tokens', () => {
   it('should define sushi-dark theme', () => {
