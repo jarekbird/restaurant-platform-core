@@ -31,7 +31,8 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <RestaurantThemeProvider themeKey={config.theme}>
+      <div className="flex min-h-screen flex-col">
       {/* Header with logo or restaurant name + navigation stub */}
       <header className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
         <div className="container mx-auto flex items-center justify-between px-4 py-4">
