@@ -1,5 +1,4 @@
 import { Menu } from '@/lib/schemas/menu';
-import { MenuCategory } from './MenuCategory';
 import { MenuItemCard } from './MenuItemCard';
 import { cn } from '@/lib/utils';
 
