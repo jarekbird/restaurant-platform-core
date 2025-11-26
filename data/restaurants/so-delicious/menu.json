@@ -1,2 +1,119 @@
-{}
-
+{
+  "id": "so-delicious-menu",
+  "name": "So Delicious Menu",
+  "currency": "USD",
+  "categories": [
+    {
+      "id": "appetizers",
+      "name": "Appetizers",
+      "description": "Start your meal with our delicious appetizers",
+      "items": [
+        {
+          "id": "edamame",
+          "name": "Edamame",
+          "description": "Steamed soybeans with sea salt",
+          "price": 6.99,
+          "tags": ["vegetarian", "healthy"]
+        },
+        {
+          "id": "gyoza",
+          "name": "Pork Gyoza",
+          "description": "Pan-fried pork dumplings with soy dipping sauce",
+          "price": 8.99,
+          "tags": ["popular"]
+        }
+      ]
+    },
+    {
+      "id": "sushi-rolls",
+      "name": "Sushi Rolls",
+      "description": "Hand-rolled sushi with fresh ingredients",
+      "items": [
+        {
+          "id": "california-roll",
+          "name": "California Roll",
+          "description": "Crab, avocado, and cucumber",
+          "price": 9.99,
+          "tags": ["popular", "vegetarian-friendly"],
+          "modifiers": [
+            {
+              "name": "Size",
+              "min": 1,
+              "max": 1,
+              "options": [
+                {
+                  "name": "6 pieces",
+                  "priceDelta": 0
+                },
+                {
+                  "name": "12 pieces",
+                  "priceDelta": 4.99
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "spicy-tuna-roll",
+          "name": "Spicy Tuna Roll",
+          "description": "Fresh tuna with spicy mayo",
+          "price": 11.99,
+          "tags": ["spicy"],
+          "modifiers": [
+            {
+              "name": "Spice Level",
+              "min": 0,
+              "max": 1,
+              "options": [
+                {
+                  "name": "Mild",
+                  "priceDelta": 0
+                },
+                {
+                  "name": "Extra Spicy",
+                  "priceDelta": 1.0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-courses",
+      "name": "Main Courses",
+      "description": "Our signature main dishes",
+      "items": [
+        {
+          "id": "teriyaki-chicken",
+          "name": "Teriyaki Chicken",
+          "description": "Grilled chicken with teriyaki sauce, served with rice and vegetables",
+          "price": 16.99,
+          "image": "https://example.com/teriyaki-chicken.jpg",
+          "tags": ["popular", "gluten-free"],
+          "modifiers": [
+            {
+              "name": "Side",
+              "min": 1,
+              "max": 1,
+              "options": [
+                {
+                  "name": "White Rice",
+                  "priceDelta": 0
+                },
+                {
+                  "name": "Brown Rice",
+                  "priceDelta": 1.0
+                },
+                {
+                  "name": "Soba Noodles",
+                  "priceDelta": 2.0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
