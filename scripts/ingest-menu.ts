@@ -12,6 +12,11 @@ import { join, dirname, extname } from 'path';
 import { menuSchema } from '@/lib/schemas';
 import { callLLMToGenerateMenuJson } from './llm-menu';
 
+/**
+ * Supported image file extensions
+ */
+const IMAGE_EXTENSIONS = ['.webp', '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg'];
+
 interface CliArgs {
   inputPath: string;
   restaurantSlug: string;
@@ -61,45 +66,111 @@ function isFile(path: string): boolean {
 }
 
 /**
- * Read all text files from a directory and combine their content
+ * Check if a file is an image based on its extension
+ */
+function isImageFile(filePath: string): boolean {
+  const ext = extname(filePath).toLowerCase();
+  return IMAGE_EXTENSIONS.includes(ext);
+}
+
+/**
+ * Check if a file is a text file based on its extension
+ */
+function isTextFile(filePath: string): boolean {
+  const ext = extname(filePath).toLowerCase();
+  return ext === '.txt';
+}
+
+/**
+ * Read image file as base64 string
+ */
+function readImageAsBase64(filePath: string): string {
+  const imageBuffer = readFileSync(filePath);
+  const base64 = imageBuffer.toString('base64');
+  const ext = extname(filePath).toLowerCase();
+  // Determine MIME type
+  const mimeTypes: Record<string, string> = {
+    '.webp': 'image/webp',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.bmp': 'image/bmp',
+    '.svg': 'image/svg+xml',
+  };
+  const mimeType = mimeTypes[ext] || 'image/png';
+  return `data:${mimeType};base64,${base64}`;
+}
+
+/**
+ * Read all text and image files from a directory and combine their content
  * 
  * @param dirPath - Path to the directory
- * @returns Combined content of all text files in the directory
+ * @returns Object with combined text content and array of image data
  */
-function readFilesFromDirectory(dirPath: string): string {
+function readFilesFromDirectory(dirPath: string): { text: string; images: string[] } {
   const files = readdirSync(dirPath);
   const textFiles = files
     .filter(file => {
       const filePath = join(dirPath, file);
-      return isFile(filePath) && extname(file).toLowerCase() === '.txt';
+      return isFile(filePath) && isTextFile(filePath);
     })
-    .sort(); // Sort for consistent ordering
+    .sort();
   
-  if (textFiles.length === 0) {
-    throw new Error(`No .txt files found in directory: ${dirPath}`);
+  const imageFiles = files
+    .filter(file => {
+      const filePath = join(dirPath, file);
+      return isFile(filePath) && isImageFile(filePath);
+    })
+    .sort();
+  
+  if (textFiles.length === 0 && imageFiles.length === 0) {
+    throw new Error(`No .txt or image files found in directory: ${dirPath}`);
   }
   
-  const contents: string[] = [];
+  const textContents: string[] = [];
   for (const file of textFiles) {
     const filePath = join(dirPath, file);
     const content = readFileSync(filePath, 'utf-8');
-    contents.push(`\n--- ${file} ---\n${content}`);
+    textContents.push(`\n--- ${file} ---\n${content}`);
   }
   
-  return contents.join('\n\n');
+  const images: string[] = [];
+  for (const file of imageFiles) {
+    const filePath = join(dirPath, file);
+    const base64Image = readImageAsBase64(filePath);
+    images.push(base64Image);
+  }
+  
+  return {
+    text: textContents.join('\n\n'),
+    images,
+  };
 }
 
 /**
- * Read raw text from a file or directory
+ * Read input from a file or directory
  * 
  * @param inputPath - Path to file or directory
- * @returns Raw text content
+ * @returns Object with text content and optional image data
  */
-function readInputText(inputPath: string): string {
+function readInput(inputPath: string): { text: string; images: string[] } {
   if (isDirectory(inputPath)) {
     return readFilesFromDirectory(inputPath);
   } else if (isFile(inputPath)) {
-    return readFileSync(inputPath, 'utf-8');
+    if (isImageFile(inputPath)) {
+      // Single image file
+      return {
+        text: '',
+        images: [readImageAsBase64(inputPath)],
+      };
+    } else {
+      // Single text file
+      return {
+        text: readFileSync(inputPath, 'utf-8'),
+        images: [],
+      };
+    }
   } else {
     throw new Error(`Input path does not exist or is not a file or directory: ${inputPath}`);
   }
@@ -112,11 +183,11 @@ async function main() {
   const { inputPath, restaurantSlug } = parseArgs();
   
   try {
-    // Read raw text from input file or folder
-    const rawText = readInputText(inputPath);
+    // Read input from file or folder (text and/or images)
+    const { text, images } = readInput(inputPath);
     
-    // Call LLM to generate menu JSON
-    const menuJson = await callLLMToGenerateMenuJson(rawText);
+    // Call LLM to generate menu JSON (pass text and images)
+    const menuJson = await callLLMToGenerateMenuJson(text, images);
     
     // Validate with menuSchema
     const menu = menuSchema.parse(menuJson);
@@ -154,5 +225,5 @@ if (require.main === module) {
   });
 }
 
-export { main as ingestMenu, readInputText, readFilesFromDirectory, isDirectory, isFile };
+export { main as ingestMenu, readInput, readFilesFromDirectory, isDirectory, isFile, isImageFile, isTextFile, readImageAsBase64 };
 

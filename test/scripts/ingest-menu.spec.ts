@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
 import { callLLMToGenerateMenuJson } from '@/scripts/llm-menu';
 import { menuSchema } from '@/lib/schemas';
-import { readInputText, readFilesFromDirectory, isDirectory, isFile } from '@/scripts/ingest-menu';
+import { readInput, readFilesFromDirectory, isDirectory, isFile, isImageFile, isTextFile, readImageAsBase64 } from '@/scripts/ingest-menu';
 
 // Mock the LLM function
 vi.mock('@/scripts/llm-menu', () => ({
@@ -75,8 +75,8 @@ describe('ingest-menu script', () => {
 
       // Run ingestion (we'll need to adjust the path logic)
       // For now, let's test the core logic
-      const rawText = readFileSync(inputFile, 'utf-8');
-      const menuJson = await callLLMToGenerateMenuJson(rawText);
+      const { text } = readInput(inputFile);
+      const menuJson = await callLLMToGenerateMenuJson(text, []);
       const menu = menuSchema.parse(menuJson);
       
       writeFileSync(outputFile, JSON.stringify(menu, null, 2), 'utf-8');
@@ -101,8 +101,8 @@ describe('ingest-menu script', () => {
 
     vi.mocked(callLLMToGenerateMenuJson).mockResolvedValue(invalidMenuJson);
 
-    const rawText = readFileSync(inputFile, 'utf-8');
-    const menuJson = await callLLMToGenerateMenuJson(rawText);
+    const { text } = readInput(inputFile);
+    const menuJson = await callLLMToGenerateMenuJson(text, []);
 
     expect(() => {
       menuSchema.parse(menuJson);
@@ -137,8 +137,8 @@ describe('ingest-menu script', () => {
     // Directory should not exist initially
     expect(existsSync(outputDirNew)).toBe(false);
 
-    const rawText = readFileSync(inputFile, 'utf-8');
-    const menuJson = await callLLMToGenerateMenuJson(rawText);
+    const { text } = readInput(inputFile);
+    const menuJson = await callLLMToGenerateMenuJson(text, []);
     const menu = menuSchema.parse(menuJson);
 
     mkdirSync(outputDirNew, { recursive: true });
@@ -176,48 +176,48 @@ describe('ingest-menu script', () => {
       // Add a non-.txt file that should be ignored
       writeFileSync(join(inputFolder, 'readme.md'), '# Menu Files', 'utf-8');
 
-      const combined = readFilesFromDirectory(inputFolder);
+      const { text } = readFilesFromDirectory(inputFolder);
 
-      expect(combined).toContain('--- appetizers.txt ---');
-      expect(combined).toContain('Bruschetta - $8.99');
-      expect(combined).toContain('--- mains.txt ---');
-      expect(combined).toContain('Pizza - $15.99');
-      expect(combined).toContain('--- desserts.txt ---');
-      expect(combined).toContain('Tiramisu - $7.99');
-      expect(combined).not.toContain('readme.md');
-      expect(combined).not.toContain('# Menu Files');
+      expect(text).toContain('--- appetizers.txt ---');
+      expect(text).toContain('Bruschetta - $8.99');
+      expect(text).toContain('--- mains.txt ---');
+      expect(text).toContain('Pizza - $15.99');
+      expect(text).toContain('--- desserts.txt ---');
+      expect(text).toContain('Tiramisu - $7.99');
+      expect(text).not.toContain('readme.md');
+      expect(text).not.toContain('# Menu Files');
     });
 
-    it('should throw error if directory has no .txt files', () => {
-      // Create a file that's not .txt
+    it('should throw error if directory has no .txt or image files', () => {
+      // Create a file that's not .txt or image
       writeFileSync(join(inputFolder, 'readme.md'), '# Menu Files', 'utf-8');
 
       expect(() => {
         readFilesFromDirectory(inputFolder);
-      }).toThrow('No .txt files found in directory');
+      }).toThrow('No .txt or image files found in directory');
     });
 
     it('should read from a single file when input is a file', () => {
-      const content = readInputText(inputFile);
-      expect(content).toContain('Appetizers');
-      expect(content).toContain('Bruschetta');
+      const { text } = readInput(inputFile);
+      expect(text).toContain('Appetizers');
+      expect(text).toContain('Bruschetta');
     });
 
     it('should read from a folder when input is a directory', () => {
       writeFileSync(join(inputFolder, 'menu1.txt'), 'Menu Part 1\n', 'utf-8');
       writeFileSync(join(inputFolder, 'menu2.txt'), 'Menu Part 2\n', 'utf-8');
 
-      const content = readInputText(inputFolder);
-      expect(content).toContain('--- menu1.txt ---');
-      expect(content).toContain('Menu Part 1');
-      expect(content).toContain('--- menu2.txt ---');
-      expect(content).toContain('Menu Part 2');
+      const { text } = readInput(inputFolder);
+      expect(text).toContain('--- menu1.txt ---');
+      expect(text).toContain('Menu Part 1');
+      expect(text).toContain('--- menu2.txt ---');
+      expect(text).toContain('Menu Part 2');
     });
 
     it('should throw error if input path does not exist', () => {
       const nonexistentPath = join(testDir, 'nonexistent-path');
       expect(() => {
-        readInputText(nonexistentPath);
+        readInput(nonexistentPath);
       }).toThrow('Input path does not exist or is not a file or directory');
     });
 
@@ -226,15 +226,93 @@ describe('ingest-menu script', () => {
       writeFileSync(join(inputFolder, 'apple.txt'), 'Apple Item\n', 'utf-8');
       writeFileSync(join(inputFolder, 'banana.txt'), 'Banana Item\n', 'utf-8');
 
-      const combined = readFilesFromDirectory(inputFolder);
+      const { text } = readFilesFromDirectory(inputFolder);
       
       // Check that files appear in alphabetical order
-      const appleIndex = combined.indexOf('apple.txt');
-      const bananaIndex = combined.indexOf('banana.txt');
-      const zebraIndex = combined.indexOf('zebra.txt');
+      const appleIndex = text.indexOf('apple.txt');
+      const bananaIndex = text.indexOf('banana.txt');
+      const zebraIndex = text.indexOf('zebra.txt');
       
       expect(appleIndex).toBeLessThan(bananaIndex);
       expect(bananaIndex).toBeLessThan(zebraIndex);
+    });
+  });
+
+  describe('image file support', () => {
+    const testImageFile = join(testDir, 'test-image.webp');
+
+    beforeEach(() => {
+      // Create a minimal valid WebP file (just for testing - not a real image)
+      // In real usage, this would be an actual image file
+      mkdirSync(testDir, { recursive: true });
+    });
+
+    it('should detect image files correctly', () => {
+      expect(isImageFile('test.webp')).toBe(true);
+      expect(isImageFile('test.png')).toBe(true);
+      expect(isImageFile('test.jpg')).toBe(true);
+      expect(isImageFile('test.jpeg')).toBe(true);
+      expect(isImageFile('test.gif')).toBe(true);
+      expect(isImageFile('test.txt')).toBe(false);
+      expect(isImageFile('test.pdf')).toBe(false);
+    });
+
+    it('should detect text files correctly', () => {
+      expect(isTextFile('test.txt')).toBe(true);
+      expect(isTextFile('test.webp')).toBe(false);
+      expect(isTextFile('test.png')).toBe(false);
+    });
+
+    it('should read image file as base64', () => {
+      // Create a minimal test file (not a real image, but enough for testing)
+      const testContent = Buffer.from('fake image data');
+      writeFileSync(testImageFile, testContent);
+
+      const base64 = readImageAsBase64(testImageFile);
+      expect(base64).toContain('data:image/webp;base64,');
+      expect(base64.length).toBeGreaterThan(20);
+    });
+
+    it('should handle single image file input', () => {
+      // Create a minimal test file
+      const testContent = Buffer.from('fake image data');
+      writeFileSync(testImageFile, testContent);
+
+      const { text, images } = readInput(testImageFile);
+      expect(text).toBe('');
+      expect(images).toHaveLength(1);
+      expect(images[0]).toContain('data:image/webp;base64,');
+    });
+
+    it('should handle folder with both text and image files', () => {
+      const inputFolder = join(testDir, 'mixed-files');
+      mkdirSync(inputFolder, { recursive: true });
+
+      writeFileSync(join(inputFolder, 'menu.txt'), 'Menu text\n', 'utf-8');
+      const testContent = Buffer.from('fake image data');
+      writeFileSync(join(inputFolder, 'menu.webp'), testContent);
+
+      const { text, images } = readInput(inputFolder);
+      expect(text).toContain('menu.txt');
+      expect(text).toContain('Menu text');
+      expect(images).toHaveLength(1);
+      expect(images[0]).toContain('data:image/webp;base64,');
+    });
+
+    it('should handle folder with only image files', () => {
+      const inputFolder = join(testDir, 'image-only');
+      mkdirSync(inputFolder, { recursive: true });
+
+      const testContent1 = Buffer.from('fake image 1');
+      const testContent2 = Buffer.from('fake image 2');
+      writeFileSync(join(inputFolder, 'image1.webp'), testContent1);
+      writeFileSync(join(inputFolder, 'image2.png'), testContent2);
+
+      const { text, images } = readInput(inputFolder);
+      expect(text).toBe('');
+      expect(images).toHaveLength(2);
+      expect(images[0]).toContain('data:image/webp;base64,');
+      expect(images[1]).toContain('data:image/png;base64,');
     });
   });
 });
