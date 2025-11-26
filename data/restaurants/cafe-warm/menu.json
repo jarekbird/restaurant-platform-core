@@ -1,0 +1,68 @@
+{
+  "id": "cafe-warm-menu",
+  "name": "Main Menu",
+  "currency": "USD",
+  "categories": [
+    {
+      "id": "coffee",
+      "name": "Coffee",
+      "description": "Freshly brewed coffee",
+      "items": [
+        {
+          "id": "espresso",
+          "name": "Espresso",
+          "description": "Rich and bold",
+          "price": 3.50,
+          "tags": ["popular"]
+        },
+        {
+          "id": "cappuccino",
+          "name": "Cappuccino",
+          "description": "Espresso with steamed milk",
+          "price": 4.50,
+          "tags": ["popular"]
+        },
+        {
+          "id": "latte",
+          "name": "Latte",
+          "description": "Espresso with steamed milk and foam",
+          "price": 5.00,
+          "modifiers": [
+            {
+              "name": "Size",
+              "min": 1,
+              "max": 1,
+              "options": [
+                { "name": "Small", "priceDelta": 0 },
+                { "name": "Medium", "priceDelta": 0.50 },
+                { "name": "Large", "priceDelta": 1.00 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pastries",
+      "name": "Pastries",
+      "description": "Fresh baked daily",
+      "items": [
+        {
+          "id": "croissant",
+          "name": "Butter Croissant",
+          "description": "Flaky and buttery",
+          "price": 3.75,
+          "tags": ["vegetarian"]
+        },
+        {
+          "id": "muffin",
+          "name": "Blueberry Muffin",
+          "description": "Made with fresh blueberries",
+          "price": 4.25,
+          "tags": ["vegetarian"]
+        }
+      ]
+    }
+  ]
+}
+
