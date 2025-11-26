@@ -2,11 +2,10 @@
  * Tests for scaffold-site script
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync, cpSync } from 'fs';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { readFileSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
 import { scaffoldSite } from '@/scripts/scaffold-site';
-import { loadRestaurant } from '@/lib/loaders/restaurant';
 
 describe('scaffold-site script', () => {
   const testOutputDir = join(process.cwd(), 'test-temp-scaffold');
@@ -27,7 +26,15 @@ describe('scaffold-site script', () => {
   });
 
   it('should copy template files to output path', async () => {
-    await scaffoldSite(restaurantSlug, testOutputDir);
+    // Mock process.argv to avoid parseArgs() calling process.exit
+    const originalArgv = process.argv;
+    process.argv = ['node', 'scaffold-site.ts', restaurantSlug, testOutputDir];
+    
+    try {
+      await scaffoldSite(restaurantSlug, testOutputDir);
+    } finally {
+      process.argv = originalArgv;
+    }
 
     // Check that template files were copied
     expect(existsSync(join(testOutputDir, 'package.json'))).toBe(true);
@@ -37,7 +44,14 @@ describe('scaffold-site script', () => {
   });
 
   it('should copy restaurant data files', async () => {
-    await scaffoldSite(restaurantSlug, testOutputDir);
+    const originalArgv = process.argv;
+    process.argv = ['node', 'scaffold-site.ts', restaurantSlug, testOutputDir];
+    
+    try {
+      await scaffoldSite(restaurantSlug, testOutputDir);
+    } finally {
+      process.argv = originalArgv;
+    }
 
     const configPath = join(testOutputDir, 'data', 'config.json');
     const menuPath = join(testOutputDir, 'data', 'menu.json');
@@ -54,7 +68,14 @@ describe('scaffold-site script', () => {
   });
 
   it('should replace placeholders in package.json', async () => {
-    await scaffoldSite(restaurantSlug, testOutputDir);
+    const originalArgv = process.argv;
+    process.argv = ['node', 'scaffold-site.ts', restaurantSlug, testOutputDir];
+    
+    try {
+      await scaffoldSite(restaurantSlug, testOutputDir);
+    } finally {
+      process.argv = originalArgv;
+    }
 
     const packageJsonPath = join(testOutputDir, 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
@@ -64,7 +85,14 @@ describe('scaffold-site script', () => {
   });
 
   it('should create data directory if it does not exist', async () => {
-    await scaffoldSite(restaurantSlug, testOutputDir);
+    const originalArgv = process.argv;
+    process.argv = ['node', 'scaffold-site.ts', restaurantSlug, testOutputDir];
+    
+    try {
+      await scaffoldSite(restaurantSlug, testOutputDir);
+    } finally {
+      process.argv = originalArgv;
+    }
 
     const dataDir = join(testOutputDir, 'data');
     expect(existsSync(dataDir)).toBe(true);

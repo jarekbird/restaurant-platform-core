@@ -7,8 +7,8 @@
  * with restaurant-specific data.
  */
 
-import { copyFileSync, cpSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { cpSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import { loadRestaurant } from '@/lib/loaders/restaurant';
 
 interface CliArgs {
@@ -31,20 +31,6 @@ function parseArgs(): CliArgs {
     restaurantSlug: args[0],
     outputPath: args[1],
   };
-}
-
-/**
- * Replace placeholders in file content
- */
-function replacePlaceholders(
-  content: string,
-  replacements: Record<string, string>
-): string {
-  let result = content;
-  for (const [key, value] of Object.entries(replacements)) {
-    result = result.replace(new RegExp(key, 'g'), value);
-  }
-  return result;
 }
 
 /**
