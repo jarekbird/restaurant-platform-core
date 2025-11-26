@@ -190,7 +190,20 @@ async function main() {
     const menuJson = await callLLMToGenerateMenuJson(text, images);
     
     // Validate with menuSchema
-    const menu = menuSchema.parse(menuJson);
+    let menu;
+    try {
+      menu = menuSchema.parse(menuJson);
+    } catch (validationError) {
+      console.error('\n=== LLM Response (for debugging) ===');
+      console.error(JSON.stringify(menuJson, null, 2));
+      console.error('=====================================\n');
+      if (validationError instanceof Error) {
+        throw new Error(
+          `Menu validation failed: ${validationError.message}`
+        );
+      }
+      throw validationError;
+    }
     
     // Write menu.json to data/restaurants/<slug>/menu.json
     const outputPath = join(

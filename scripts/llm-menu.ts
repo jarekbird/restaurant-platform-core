@@ -50,30 +50,37 @@ function createMenuExtractionPrompt(rawText: string): string {
 
 ## Output Format
 
-Return ONLY valid JSON matching this structure:
+You MUST return valid JSON matching this EXACT structure. All required fields must be present:
+
 {
-  "id": "extracted-menu",
-  "name": "Main Menu",
-  "currency": "USD",
-  "categories": [
+  "id": "extracted-menu",           // REQUIRED: unique menu identifier
+  "name": "Main Menu",              // REQUIRED: menu name
+  "currency": "USD",                // REQUIRED: currency code (default: "USD")
+  "categories": [                    // REQUIRED: array with at least one category
     {
-      "id": "category-id",
-      "name": "Category Name",
-      "description": "Optional description",
-      "items": [
+      "id": "category-id",           // REQUIRED: unique category identifier
+      "name": "Category Name",       // REQUIRED: category name
+      "description": "Optional description",  // Optional
+      "items": [                     // REQUIRED: array with at least one item
         {
-          "id": "item-id",
-          "name": "Item Name",
-          "description": "Optional description",
-          "price": 10.99,
-          "tags": ["optional", "tags"],
-          "modifiers": [
+          "id": "item-id",           // REQUIRED: unique item identifier
+          "name": "Item Name",       // REQUIRED: item name
+          "description": "Optional description",  // Optional
+          "price": 10.99,            // REQUIRED: price as number (not string)
+          "image": "https://...",    // Optional: image URL
+          "tags": ["optional", "tags"],  // Optional: array of strings
+          "modifiers": [             // Optional: array of modifier groups
             {
-              "name": "Modifier Group Name",
-              "min": 0,
-              "max": 1,
-              "options": [
-                { "name": "Option Name", "priceDelta": 0 }
+              "id": "modifier-id",   // Optional: modifier group ID
+              "name": "Modifier Group Name",  // REQUIRED if modifiers present
+              "min": 0,              // Optional: minimum selections
+              "max": 1,              // Optional: maximum selections
+              "options": [           // REQUIRED if modifiers present: array with at least one option
+                {
+                  "id": "option-id", // Optional: option ID
+                  "name": "Option Name",  // REQUIRED: option name
+                  "priceDelta": 0     // REQUIRED: price change as number
+                }
               ]
             }
           ]
@@ -83,11 +90,91 @@ Return ONLY valid JSON matching this structure:
   ]
 }
 
+CRITICAL: The JSON must have these top-level fields: "id", "name", "currency", and "categories". The "categories" array must contain at least one category, and each category must have at least one item.
+
 ## Input to Process
 
 ${rawText || '(No text provided - extracting from images only)'}
 
 Extract the menu information and return ONLY the JSON object, no additional text or explanation.`;
+}
+
+/**
+ * Transform LLM response to match expected schema
+ * Handles cases where LLM wraps response in "menu" object or uses different structure
+ */
+function transformLLMResponse(response: unknown): unknown {
+  if (!response || typeof response !== 'object') {
+    return response;
+  }
+
+  const responseObj = response as Record<string, unknown>;
+
+  // If response is wrapped in a "menu" object, unwrap it
+  if ('menu' in responseObj && typeof responseObj.menu === 'object') {
+    const menuData = responseObj.menu as Record<string, unknown>;
+    
+    // Check if menuData has category-like structure (keys are category names, values are item arrays)
+    const categoryKeys = Object.keys(menuData);
+    const looksLikeCategoryStructure = categoryKeys.every(key => 
+      Array.isArray(menuData[key])
+    );
+
+    if (looksLikeCategoryStructure) {
+      // Transform to expected schema
+      const categories = categoryKeys.map((categoryName, index) => {
+        const items = (menuData[categoryName] as Array<Record<string, unknown>>) || [];
+        return {
+          id: generateId(categoryName),
+          name: categoryName,
+          items: items.map((item, itemIndex) => ({
+            id: generateId(item.name as string || `item-${index}-${itemIndex}`),
+            name: item.name || 'Unnamed Item',
+            description: item.description,
+            price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price || 0)),
+            image: item.image,
+            tags: item.tags,
+            modifiers: item.modifiers,
+          })),
+        };
+      });
+
+      return {
+        id: 'extracted-menu',
+        name: 'Main Menu',
+        currency: 'USD',
+        categories,
+      };
+    }
+  }
+
+  // If response already has the expected structure, return as-is
+  if ('id' in responseObj && 'name' in responseObj && 'categories' in responseObj) {
+    return response;
+  }
+
+  // If response has categories at top level but missing id/name
+  if ('categories' in responseObj && Array.isArray(responseObj.categories)) {
+    return {
+      id: 'extracted-menu',
+      name: 'Main Menu',
+      currency: responseObj.currency || 'USD',
+      categories: responseObj.categories,
+    };
+  }
+
+  return response;
+}
+
+/**
+ * Generate URL-friendly ID from name
+ */
+function generateId(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 50);
 }
 
 /**
@@ -202,6 +289,9 @@ export async function callLLMToGenerateMenuJson(
         `Response was: ${content.substring(0, 500)}`
       );
     }
+
+    // Transform response if it's wrapped in a "menu" object or has a different structure
+    menuJson = transformLLMResponse(menuJson);
 
     return menuJson;
   } catch (error) {
