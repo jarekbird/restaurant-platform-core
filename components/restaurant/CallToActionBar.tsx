@@ -1,4 +1,7 @@
+'use client';
+
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 interface CallToActionBarProps {
   primaryAction: {
@@ -17,10 +20,11 @@ export function CallToActionBar({
   primaryAction,
   className,
 }: CallToActionBarProps) {
+  const theme = useTheme();
   const content = (
     <button
       onClick={primaryAction.onClick}
-      className="rounded-full bg-black px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+      className={cn('rounded-full px-8 py-4 text-lg font-semibold transition-colors', theme.colors.primary, theme.typography.heading, className)}
     >
       {primaryAction.label}
     </button>

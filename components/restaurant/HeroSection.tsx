@@ -1,6 +1,9 @@
+'use client';
+
 import Image from 'next/image';
 import { RestaurantConfig } from '@/lib/schemas/restaurant';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 interface HeroSectionProps {
   config: RestaurantConfig;
@@ -12,8 +15,10 @@ interface HeroSectionProps {
  * Renders hero image, title, and tagline from restaurant config
  */
 export function HeroSection({ config, className }: HeroSectionProps) {
+  const theme = useTheme();
+  
   return (
-    <section className={cn('relative w-full', className)}>
+    <section className={cn('relative w-full', theme.colors.background, className)}>
       {config.heroImage && (
         <div className="relative h-96 w-full overflow-hidden">
           <Image
@@ -33,11 +38,11 @@ export function HeroSection({ config, className }: HeroSectionProps) {
         )}
       >
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-white md:text-5xl lg:text-6xl">
+          <h1 className={cn('text-4xl font-bold md:text-5xl lg:text-6xl', theme.colors.text, theme.typography.heading)}>
             {config.name}
           </h1>
           {config.cuisine && (
-            <p className="mt-4 text-xl text-white/90 md:text-2xl">
+            <p className={cn('mt-4 text-xl md:text-2xl', theme.colors.textMuted)}>
               {config.cuisine} Cuisine
             </p>
           )}
