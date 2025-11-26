@@ -6,6 +6,10 @@
  */
 
 import OpenAI from 'openai';
+import { config } from 'dotenv';
+
+// Load environment variables from .env file
+config();
 
 /**
  * Create menu extraction prompt based on documentation
