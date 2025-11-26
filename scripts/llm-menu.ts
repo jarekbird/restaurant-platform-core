@@ -114,47 +114,47 @@ function transformLLMResponse(response: unknown): unknown {
 
   const responseObj = response as Record<string, unknown>;
 
+  // Check if response already has the expected structure
+  if ('id' in responseObj && 'name' in responseObj && 'categories' in responseObj && Array.isArray(responseObj.categories)) {
+    return response;
+  }
+
   // If response is wrapped in a "menu" object, unwrap it
   if ('menu' in responseObj && typeof responseObj.menu === 'object') {
     const menuData = responseObj.menu as Record<string, unknown>;
-    
-    // Check if menuData has category-like structure (keys are category names, values are item arrays)
-    const categoryKeys = Object.keys(menuData);
-    const looksLikeCategoryStructure = categoryKeys.every(key => 
-      Array.isArray(menuData[key])
-    );
-
-    if (looksLikeCategoryStructure) {
-      // Transform to expected schema
-      const categories = categoryKeys.map((categoryName, index) => {
-        const items = (menuData[categoryName] as Array<Record<string, unknown>>) || [];
-        return {
-          id: generateId(categoryName),
-          name: categoryName,
-          items: items.map((item, itemIndex) => ({
-            id: generateId(item.name as string || `item-${index}-${itemIndex}`),
-            name: item.name || 'Unnamed Item',
-            description: item.description,
-            price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price || 0)),
-            image: item.image,
-            tags: item.tags,
-            modifiers: item.modifiers,
-          })),
-        };
-      });
-
-      return {
-        id: 'extracted-menu',
-        name: 'Main Menu',
-        currency: 'USD',
-        categories,
-      };
-    }
+    responseObj = menuData; // Continue processing with unwrapped data
   }
 
-  // If response already has the expected structure, return as-is
-  if ('id' in responseObj && 'name' in responseObj && 'categories' in responseObj) {
-    return response;
+  // Check if response has category-like structure (keys are category names, values are item arrays)
+  const categoryKeys = Object.keys(responseObj);
+  const looksLikeCategoryStructure = categoryKeys.length > 0 && 
+    categoryKeys.every(key => Array.isArray(responseObj[key]));
+
+  if (looksLikeCategoryStructure) {
+    // Transform to expected schema
+    const categories = categoryKeys.map((categoryName) => {
+      const items = (responseObj[categoryName] as Array<Record<string, unknown>>) || [];
+      return {
+        id: generateId(categoryName),
+        name: categoryName,
+        items: items.map((item, itemIndex) => ({
+          id: generateId(item.name as string || item.id as string || `item-${categoryName}-${itemIndex}`),
+          name: item.name || 'Unnamed Item',
+          description: item.description,
+          price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price || 0)),
+          image: item.image,
+          tags: item.tags,
+          modifiers: item.modifiers,
+        })),
+      };
+    });
+
+    return {
+      id: 'extracted-menu',
+      name: 'Main Menu',
+      currency: 'USD',
+      categories,
+    };
   }
 
   // If response has categories at top level but missing id/name
@@ -202,6 +202,122 @@ function extractMimeTypeFromDataUri(dataUri: string): string {
 }
 
 /**
+ * Extract restaurant information from menu text/images
+ * 
+ * @param rawText - Raw menu text to process (empty string if only images provided)
+ * @param images - Array of base64-encoded images (data URIs) to process
+ * @returns Promise resolving to restaurant info object
+ */
+export async function extractRestaurantInfo(
+  rawText: string,
+  images: string[] = []
+): Promise<{
+  name?: string;
+  phone?: string;
+  email?: string;
+  hours?: Record<string, string>;
+  cuisine?: string;
+}> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    // If no API key, return empty object (will use defaults)
+    return {};
+  }
+
+  const openai = new OpenAI({ apiKey });
+
+  try {
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+    
+    messages.push({
+      role: 'system',
+      content: 'You are a restaurant information extraction expert. Extract restaurant details from menu text and/or images. Return ONLY valid JSON, no additional text.',
+    });
+
+    const userContent: (OpenAI.Chat.Completions.ChatCompletionContentPartText | OpenAI.Chat.Completions.ChatCompletionContentPartImage)[] = [];
+    
+    const prompt = `Extract restaurant information from the menu. Look for:
+- Restaurant name (often in header, logo, or title)
+- Phone number (format: any phone format)
+- Email address (if present)
+- Hours of operation (if listed, format as object with keys: mon, tue, wed, thu, fri, sat, sun, values like "11:00-21:00")
+- Cuisine type (infer from menu items: e.g., "Japanese", "Italian", "American", "Mexican", etc.)
+
+Return JSON in this format:
+{
+  "name": "Restaurant Name" or null,
+  "phone": "phone number" or null,
+  "email": "email@example.com" or null,
+  "hours": {"mon": "11:00-21:00", ...} or null,
+  "cuisine": "Cuisine Type" or null
+}
+
+Only include fields that you can clearly identify. Use null for missing information.
+
+${rawText || '(No text provided - extracting from images only)'}`;
+
+    if (rawText.trim()) {
+      userContent.push({
+        type: 'text',
+        text: prompt,
+      });
+    }
+
+    for (const imageDataUri of images) {
+      const base64Data = extractBase64FromDataUri(imageDataUri);
+      const mimeType = extractMimeTypeFromDataUri(imageDataUri);
+      
+      userContent.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:${mimeType};base64,${base64Data}`,
+        },
+      });
+    }
+
+    if (userContent.length === 0) {
+      return {};
+    }
+
+    messages.push({
+      role: 'user',
+      content: userContent,
+    });
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages,
+      response_format: { type: 'json_object' },
+      temperature: 0.3,
+      max_tokens: 1000,
+    });
+
+    const content = response.choices[0]?.message?.content;
+    
+    if (!content) {
+      return {};
+    }
+
+    try {
+      const info = JSON.parse(content);
+      return {
+        name: info.name || undefined,
+        phone: info.phone || undefined,
+        email: info.email || undefined,
+        hours: info.hours || undefined,
+        cuisine: info.cuisine || undefined,
+      };
+    } catch {
+      return {};
+    }
+  } catch {
+    // If extraction fails, return empty object (will use defaults)
+    return {};
+  }
+}
+
+/**
  * Call LLM to generate menu JSON from raw text and/or images
  * 
  * @param rawText - Raw menu text to process (empty string if only images provided)
@@ -216,7 +332,7 @@ export async function callLLMToGenerateMenuJson(
   const apiKey = process.env.OPENAI_API_KEY;
   
   if (!apiKey) {
-    throw new Error(
+  throw new Error(
       'OPENAI_API_KEY environment variable is not set. ' +
       'Please set it to your OpenAI API key to use menu ingestion.'
     );

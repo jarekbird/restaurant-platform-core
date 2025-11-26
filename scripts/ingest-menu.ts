@@ -7,10 +7,10 @@
  * menu JSON, validates with menuSchema, and writes to output location.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, statSync, readdirSync } from 'fs';
-import { join, dirname, extname } from 'path';
-import { menuSchema } from '@/lib/schemas';
-import { callLLMToGenerateMenuJson } from './llm-menu';
+import { readFileSync, writeFileSync, mkdirSync, statSync, readdirSync, existsSync } from 'fs';
+import { join, extname } from 'path';
+import { menuSchema, restaurantConfigSchema } from '@/lib/schemas';
+import { callLLMToGenerateMenuJson, extractRestaurantInfo } from './llm-menu';
 
 /**
  * Supported image file extensions
@@ -177,6 +177,56 @@ function readInput(inputPath: string): { text: string; images: string[] } {
 }
 
 /**
+ * Infer theme from cuisine type
+ */
+function inferThemeFromCuisine(cuisine?: string): string {
+  if (!cuisine) {
+    return 'sushi-dark'; // Default theme
+  }
+
+  const cuisineLower = cuisine.toLowerCase();
+  
+  // Map cuisine types to themes
+  if (cuisineLower.includes('sushi') || cuisineLower.includes('japanese')) {
+    return 'sushi-dark';
+  }
+  if (cuisineLower.includes('coffee') || cuisineLower.includes('cafe') || cuisineLower.includes('bakery')) {
+    return 'cafe-warm';
+  }
+  if (cuisineLower.includes('pizza') || cuisineLower.includes('italian')) {
+    return 'pizza-bright';
+  }
+  
+  // Default theme
+  return 'sushi-dark';
+}
+
+/**
+ * Create default hours
+ */
+function createDefaultHours(): Record<string, string> {
+  return {
+    mon: '11:00-21:00',
+    tue: '11:00-21:00',
+    wed: '11:00-21:00',
+    thu: '11:00-21:00',
+    fri: '11:00-22:00',
+    sat: '12:00-22:00',
+    sun: '12:00-20:00',
+  };
+}
+
+/**
+ * Generate restaurant name from slug if not provided
+ */
+function generateNameFromSlug(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
  * Main ingestion function
  */
 async function main() {
@@ -186,10 +236,13 @@ async function main() {
     // Read input from file or folder (text and/or images)
     const { text, images } = readInput(inputPath);
     
-    // Call LLM to generate menu JSON (pass text and images)
-    const menuJson = await callLLMToGenerateMenuJson(text, images);
+    // Extract restaurant info and menu in parallel
+    const [restaurantInfo, menuJson] = await Promise.all([
+      extractRestaurantInfo(text, images),
+      callLLMToGenerateMenuJson(text, images),
+    ]);
     
-    // Validate with menuSchema
+    // Validate menu with menuSchema
     let menu;
     try {
       menu = menuSchema.parse(menuJson);
@@ -205,22 +258,68 @@ async function main() {
       throw validationError;
     }
     
-    // Write menu.json to data/restaurants/<slug>/menu.json
-    const outputPath = join(
+    // Determine restaurant directory
+    const restaurantDir = join(
       process.cwd(),
       'data',
       'restaurants',
-      restaurantSlug,
-      'menu.json'
+      restaurantSlug
     );
     
     // Create directories if needed
-    mkdirSync(dirname(outputPath), { recursive: true });
+    mkdirSync(restaurantDir, { recursive: true });
     
-    // Write validated menu
-    writeFileSync(outputPath, JSON.stringify(menu, null, 2), 'utf-8');
+    // Write menu.json
+    const menuPath = join(restaurantDir, 'menu.json');
+    writeFileSync(menuPath, JSON.stringify(menu, null, 2), 'utf-8');
+    console.log(`Successfully wrote menu to ${menuPath}`);
     
-    console.log(`Successfully wrote menu to ${outputPath}`);
+    // Create config.json if it doesn't exist
+    const configPath = join(restaurantDir, 'config.json');
+    if (!existsSync(configPath)) {
+      // Infer cuisine from menu if not extracted
+      const cuisine = restaurantInfo.cuisine || 
+        (menu.categories.some(cat => 
+          cat.items.some(item => 
+            item.name.toLowerCase().includes('sushi') || 
+            item.name.toLowerCase().includes('roll') ||
+            item.name.toLowerCase().includes('maki')
+          )
+        ) ? 'Japanese Sushi' : 'American');
+      
+      // Infer theme from cuisine
+      const theme = inferThemeFromCuisine(cuisine);
+      
+      // Create config with extracted info and defaults
+      const config = {
+        id: restaurantSlug,
+        name: restaurantInfo.name || generateNameFromSlug(restaurantSlug),
+        slug: restaurantSlug,
+        address: '123 Main Street', // Default - user should update
+        city: 'San Francisco', // Default - user should update
+        state: 'CA', // Default - user should update
+        zip: '94102', // Default - user should update
+        phone: restaurantInfo.phone || '+1-415-555-0100', // Default if not found
+        email: restaurantInfo.email,
+        hours: restaurantInfo.hours || createDefaultHours(),
+        cuisine: cuisine,
+        theme: theme,
+        orderOnlineEnabled: false,
+      };
+      
+      // Validate config
+      try {
+        const validatedConfig = restaurantConfigSchema.parse(config);
+        writeFileSync(configPath, JSON.stringify(validatedConfig, null, 2), 'utf-8');
+        console.log(`Successfully created config.json at ${configPath}`);
+        console.log(`\nNote: Please update address, city, state, and zip in config.json with actual restaurant location.`);
+      } catch (configError) {
+        console.warn(`Warning: Could not create config.json: ${configError instanceof Error ? configError.message : 'Unknown error'}`);
+        console.warn('You may need to create config.json manually.');
+      }
+    } else {
+      console.log(`Config.json already exists at ${configPath}, skipping creation.`);
+    }
   } catch (error) {
     if (error instanceof Error) {
       console.error(`Error: ${error.message}`);

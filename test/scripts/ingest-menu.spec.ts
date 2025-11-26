@@ -5,13 +5,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
-import { callLLMToGenerateMenuJson } from '@/scripts/llm-menu';
+import { callLLMToGenerateMenuJson, extractRestaurantInfo } from '@/scripts/llm-menu';
 import { menuSchema } from '@/lib/schemas';
 import { readInput, readFilesFromDirectory, isDirectory, isFile, isImageFile, isTextFile, readImageAsBase64 } from '@/scripts/ingest-menu';
 
-// Mock the LLM function
+// Mock the LLM functions
 vi.mock('@/scripts/llm-menu', () => ({
   callLLMToGenerateMenuJson: vi.fn(),
+  extractRestaurantInfo: vi.fn(),
 }));
 
 describe('ingest-menu script', () => {
@@ -30,6 +31,9 @@ describe('ingest-menu script', () => {
       'Appetizers\nBruschetta - $8.99\nWings - $12.99\n\nMain Courses\nPizza - $15.99\nPasta - $14.99',
       'utf-8'
     );
+    
+    // Mock extractRestaurantInfo to return empty object (will use defaults)
+    vi.mocked(extractRestaurantInfo).mockResolvedValue({});
   });
 
   afterEach(() => {
