@@ -16,8 +16,8 @@ describe('so-delicious config.json', () => {
     const result = restaurantConfigSchema.parse(configData);
     
     expect(result.id).toBe('so-delicious');
-    expect(result.name).toBe('So Delicious');
-    expect(result.slug).toBe('so-delicious');
+    expect(result.name).toBe('So Delicious Sushi');
+    expect(result.slug).toBe('so-delicious-sushi');
     expect(result.theme).toBe('sushi-dark');
     expect(result.orderOnlineEnabled).toBe(true);
   });
