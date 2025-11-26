@@ -2,7 +2,7 @@
  * Tests for scaffold-site script
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
 import { scaffoldSite } from '@/scripts/scaffold-site';
