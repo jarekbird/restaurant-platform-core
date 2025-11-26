@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import Image from 'next/image';
 import { RestaurantConfig } from '@/lib/schemas/restaurant';
+import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 
 interface RestaurantLayoutProps {
   config: RestaurantConfig;
@@ -99,6 +100,7 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
         </div>
       </footer>
     </div>
+    </RestaurantThemeProvider>
   );
 }
 
