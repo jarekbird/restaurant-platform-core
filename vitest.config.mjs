@@ -13,6 +13,8 @@ export default defineConfig({
     setupFiles: ['./test/setup-tests.ts'],
     include: ['**/__tests__/**/*.{ts,tsx}', '**/test/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/test/setup-tests.ts'],
+    // Ensure tests don't hang by forcing exit
+    teardownTimeout: 10000,
   },
   resolve: {
     alias: {
