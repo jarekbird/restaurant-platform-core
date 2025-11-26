@@ -114,7 +114,13 @@ describe('ingest-menu script', () => {
       id: 'test-menu',
       name: 'Test Menu',
       currency: 'USD',
-      categories: [],
+      categories: [
+        {
+          id: 'appetizers',
+          name: 'Appetizers',
+          items: [],
+        },
+      ],
     };
 
     vi.mocked(callLLMToGenerateMenuJson).mockResolvedValue(mockMenuJson);
