@@ -18,6 +18,8 @@ export async function callLLMToGenerateMenuJson(
 ): Promise<unknown> {
   // TODO: Implement LLM call to generate menu JSON
   // This is a placeholder that will be implemented by future agents
+  // Parameter is intentionally unused in this stub implementation
+  void rawText; // Suppress unused parameter warning
   throw new Error(
     'callLLMToGenerateMenuJson is not yet implemented. This is a placeholder.'
   );

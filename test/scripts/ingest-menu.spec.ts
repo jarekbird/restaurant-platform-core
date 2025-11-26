@@ -5,7 +5,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
-import { ingestMenu } from '@/scripts/ingest-menu';
 import { callLLMToGenerateMenuJson } from '@/scripts/llm-menu';
 import { menuSchema } from '@/lib/schemas';
 

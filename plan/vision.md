@@ -261,4 +261,3 @@ Everything should move toward “generate → configure → deploy” workflows.
 
 We are building an AI-powered restaurant platform that starts as an internal Next.js/TanStack template engine and evolves into a full multi-tenant SaaS for menu management, ordering, delivery integration, and AI restaurant operations. The system’s goal is to generate beautiful, modern restaurant websites with structured menus and ordering, automate menu ingestion, and eventually run the entire digital infrastructure for restaurants. All code should be reusable, theme-driven, schema-first, and aligned toward automation and future SaaS capabilities.
 
-If you'd like, I can now convert this into a repository-ready /docs/vision.md or a README.md introduction for the core repo.
