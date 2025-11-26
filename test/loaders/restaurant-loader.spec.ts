@@ -12,13 +12,13 @@ describe('loadRestaurant', () => {
     // Verify config
     expect(result.config).toBeDefined();
     expect(result.config.id).toBe('so-delicious');
-    expect(result.config.name).toBe('So Delicious Sushi');
-    expect(result.config.slug).toBe('so-delicious-sushi');
-    expect(result.config.address).toBe('123 Sushi Lane');
-    expect(result.config.city).toBe('Metropolis');
+    expect(result.config.name).toBe('So Delicious');
+    expect(result.config.slug).toBe('so-delicious');
+    expect(result.config.address).toBe('123 Sushi Street');
+    expect(result.config.city).toBe('San Francisco');
     expect(result.config.state).toBe('CA');
-    expect(result.config.zip).toBe('90210');
-    expect(result.config.phone).toBe('555-123-4567');
+    expect(result.config.zip).toBe('94102');
+    expect(result.config.phone).toBe('+1-415-555-0123');
     expect(result.config.cuisine).toBe('Japanese');
     expect(result.config.theme).toBe('sushi-dark');
 
