@@ -1,0 +1,34 @@
+{
+  "_comment": "TODO: Replace with actual menu data",
+  "id": "menu-id",
+  "name": "Main Menu",
+  "currency": "USD",
+  "categories": [
+    {
+      "id": "appetizers",
+      "name": "Appetizers",
+      "description": "Start your meal",
+      "items": [
+        {
+          "id": "item-1",
+          "name": "Sample Appetizer",
+          "description": "A delicious starter",
+          "price": 8.99
+        }
+      ]
+    },
+    {
+      "id": "mains",
+      "name": "Main Courses",
+      "items": [
+        {
+          "id": "item-2",
+          "name": "Sample Main Course",
+          "description": "A hearty main dish",
+          "price": 15.99
+        }
+      ]
+    }
+  ]
+}
+

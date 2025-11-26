@@ -1,0 +1,25 @@
+{
+  "_comment": "TODO: Replace with actual restaurant configuration",
+  "id": "restaurant-slug",
+  "name": "Restaurant Name",
+  "slug": "restaurant-slug",
+  "address": "123 Main St",
+  "city": "City",
+  "state": "ST",
+  "zip": "12345",
+  "phone": "+1-555-123-4567",
+  "email": "info@restaurant.com",
+  "hours": {
+    "mon": "11:00-21:00",
+    "tue": "11:00-21:00",
+    "wed": "11:00-21:00",
+    "thu": "11:00-21:00",
+    "fri": "11:00-22:00",
+    "sat": "12:00-22:00",
+    "sun": "12:00-20:00"
+  },
+  "cuisine": "Cuisine Type",
+  "theme": "sushi-dark",
+  "orderOnlineEnabled": false
+}
+
