@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
 import { callLLMToGenerateMenuJson } from '@/scripts/llm-menu';
 import { menuSchema } from '@/lib/schemas';
+import { readInputText, readFilesFromDirectory, isDirectory, isFile } from '@/scripts/ingest-menu';
 
 // Mock the LLM function
 vi.mock('@/scripts/llm-menu', () => ({
@@ -146,6 +147,95 @@ describe('ingest-menu script', () => {
     // Directory should now exist
     expect(existsSync(outputDirNew)).toBe(true);
     expect(existsSync(outputFileNew)).toBe(true);
+  });
+
+  describe('folder input support', () => {
+    const inputFolder = join(testDir, 'menu-files');
+
+    beforeEach(() => {
+      mkdirSync(inputFolder, { recursive: true });
+    });
+
+    it('should detect if a path is a directory', () => {
+      expect(isDirectory(inputFolder)).toBe(true);
+      expect(isDirectory(inputFile)).toBe(false);
+      expect(isDirectory(join(testDir, 'nonexistent'))).toBe(false);
+    });
+
+    it('should detect if a path is a file', () => {
+      expect(isFile(inputFile)).toBe(true);
+      expect(isFile(inputFolder)).toBe(false);
+      expect(isFile(join(testDir, 'nonexistent.txt'))).toBe(false);
+    });
+
+    it('should read all .txt files from a directory and combine them', () => {
+      // Create multiple text files in the folder
+      writeFileSync(join(inputFolder, 'appetizers.txt'), 'Appetizers\nBruschetta - $8.99\n', 'utf-8');
+      writeFileSync(join(inputFolder, 'mains.txt'), 'Main Courses\nPizza - $15.99\n', 'utf-8');
+      writeFileSync(join(inputFolder, 'desserts.txt'), 'Desserts\nTiramisu - $7.99\n', 'utf-8');
+      // Add a non-.txt file that should be ignored
+      writeFileSync(join(inputFolder, 'readme.md'), '# Menu Files', 'utf-8');
+
+      const combined = readFilesFromDirectory(inputFolder);
+
+      expect(combined).toContain('--- appetizers.txt ---');
+      expect(combined).toContain('Bruschetta - $8.99');
+      expect(combined).toContain('--- mains.txt ---');
+      expect(combined).toContain('Pizza - $15.99');
+      expect(combined).toContain('--- desserts.txt ---');
+      expect(combined).toContain('Tiramisu - $7.99');
+      expect(combined).not.toContain('readme.md');
+      expect(combined).not.toContain('# Menu Files');
+    });
+
+    it('should throw error if directory has no .txt files', () => {
+      // Create a file that's not .txt
+      writeFileSync(join(inputFolder, 'readme.md'), '# Menu Files', 'utf-8');
+
+      expect(() => {
+        readFilesFromDirectory(inputFolder);
+      }).toThrow('No .txt files found in directory');
+    });
+
+    it('should read from a single file when input is a file', () => {
+      const content = readInputText(inputFile);
+      expect(content).toContain('Appetizers');
+      expect(content).toContain('Bruschetta');
+    });
+
+    it('should read from a folder when input is a directory', () => {
+      writeFileSync(join(inputFolder, 'menu1.txt'), 'Menu Part 1\n', 'utf-8');
+      writeFileSync(join(inputFolder, 'menu2.txt'), 'Menu Part 2\n', 'utf-8');
+
+      const content = readInputText(inputFolder);
+      expect(content).toContain('--- menu1.txt ---');
+      expect(content).toContain('Menu Part 1');
+      expect(content).toContain('--- menu2.txt ---');
+      expect(content).toContain('Menu Part 2');
+    });
+
+    it('should throw error if input path does not exist', () => {
+      const nonexistentPath = join(testDir, 'nonexistent-path');
+      expect(() => {
+        readInputText(nonexistentPath);
+      }).toThrow('Input path does not exist or is not a file or directory');
+    });
+
+    it('should process files in alphabetical order', () => {
+      writeFileSync(join(inputFolder, 'zebra.txt'), 'Zebra Item\n', 'utf-8');
+      writeFileSync(join(inputFolder, 'apple.txt'), 'Apple Item\n', 'utf-8');
+      writeFileSync(join(inputFolder, 'banana.txt'), 'Banana Item\n', 'utf-8');
+
+      const combined = readFilesFromDirectory(inputFolder);
+      
+      // Check that files appear in alphabetical order
+      const appleIndex = combined.indexOf('apple.txt');
+      const bananaIndex = combined.indexOf('banana.txt');
+      const zebraIndex = combined.indexOf('zebra.txt');
+      
+      expect(appleIndex).toBeLessThan(bananaIndex);
+      expect(bananaIndex).toBeLessThan(zebraIndex);
+    });
   });
 });
 
