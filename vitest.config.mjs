@@ -10,7 +10,9 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: ['./test/setup-tests.ts'],
+    include: ['**/__tests__/**/*.{ts,tsx}', '**/test/**/*.test.{ts,tsx}'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/test/setup-tests.ts'],
   },
   resolve: {
     alias: {
