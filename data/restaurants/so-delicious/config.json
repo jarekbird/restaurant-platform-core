@@ -1,7 +1,7 @@
 {
   "id": "so-delicious",
-  "name": "So Delicious",
-  "slug": "so-delicious",
+  "name": "So Delicious Sushi",
+  "slug": "so-delicious-sushi",
   "address": "123 Sushi Street",
   "city": "San Francisco",
   "state": "CA",
@@ -19,7 +19,7 @@
   },
   "cuisine": "Japanese",
   "theme": "sushi-dark",
-  "heroImage": "https://example.com/hero.jpg",
-  "logo": "https://example.com/logo.png",
+  "heroImage": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200",
+  "logo": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400",
   "orderOnlineEnabled": true
 }
