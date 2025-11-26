@@ -118,7 +118,13 @@ describe('ingest-menu script', () => {
         {
           id: 'appetizers',
           name: 'Appetizers',
-          items: [],
+          items: [
+            {
+              id: 'item-1',
+              name: 'Test Item',
+              price: 10.99,
+            },
+          ],
         },
       ],
     };
