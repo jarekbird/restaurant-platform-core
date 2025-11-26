@@ -8,6 +8,7 @@ import { HeroSection } from '@/components/restaurant/HeroSection';
 import { FeaturedItems } from '@/components/restaurant/FeaturedItems';
 import { HoursAndLocation } from '@/components/restaurant/HoursAndLocation';
 import { CallToActionBar } from '@/components/restaurant/CallToActionBar';
+import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 import { restaurantConfigSchema, menuItemSchema } from '@/lib/schemas';
 
 describe('Restaurant Home Page Blocks', () => {
@@ -37,12 +38,20 @@ describe('Restaurant Home Page Blocks', () => {
 
   describe('HeroSection', () => {
     it('should render restaurant name', () => {
-      render(<HeroSection config={mockConfig} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <HeroSection config={mockConfig} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Test Restaurant')).toBeInTheDocument();
     });
 
     it('should render cuisine tagline when provided', () => {
-      render(<HeroSection config={mockConfig} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <HeroSection config={mockConfig} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Italian Cuisine')).toBeInTheDocument();
     });
 
@@ -51,7 +60,11 @@ describe('Restaurant Home Page Blocks', () => {
         ...mockConfig,
         heroImage: undefined,
       };
-      render(<HeroSection config={configWithoutHero} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <HeroSection config={configWithoutHero} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Test Restaurant')).toBeInTheDocument();
     });
   });
@@ -73,30 +86,50 @@ describe('Restaurant Home Page Blocks', () => {
     ];
 
     it('should render featured items title', () => {
-      render(<FeaturedItems items={mockItems} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <FeaturedItems items={mockItems} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Featured Items')).toBeInTheDocument();
     });
 
     it('should render all featured items', () => {
-      render(<FeaturedItems items={mockItems} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <FeaturedItems items={mockItems} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Pizza')).toBeInTheDocument();
       expect(screen.getByText('Pasta')).toBeInTheDocument();
     });
 
     it('should render custom title when provided', () => {
-      render(<FeaturedItems items={mockItems} title="Today's Specials" />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <FeaturedItems items={mockItems} title="Today's Specials" />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText("Today's Specials")).toBeInTheDocument();
     });
 
     it('should return null when items array is empty', () => {
-      const { container } = render(<FeaturedItems items={[]} />);
+      const { container } = render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <FeaturedItems items={[]} />
+        </RestaurantThemeProvider>
+      );
       expect(container.firstChild).toBeNull();
     });
   });
 
   describe('HoursAndLocation', () => {
     it('should render location information', () => {
-      render(<HoursAndLocation config={mockConfig} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <HoursAndLocation config={mockConfig} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Location')).toBeInTheDocument();
       expect(screen.getByText(/123 Test St/i)).toBeInTheDocument();
       expect(screen.getByText(/Test City, TS 12345/i)).toBeInTheDocument();
@@ -104,7 +137,11 @@ describe('Restaurant Home Page Blocks', () => {
     });
 
     it('should render hours information', () => {
-      render(<HoursAndLocation config={mockConfig} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <HoursAndLocation config={mockConfig} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Hours')).toBeInTheDocument();
       expect(screen.getByText('Monday:')).toBeInTheDocument();
       const hours = screen.getAllByText('11:00-21:00');
@@ -114,7 +151,11 @@ describe('Restaurant Home Page Blocks', () => {
     });
 
     it('should render email when provided', () => {
-      render(<HoursAndLocation config={mockConfig} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <HoursAndLocation config={mockConfig} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('test@example.com')).toBeInTheDocument();
     });
 
@@ -123,7 +164,11 @@ describe('Restaurant Home Page Blocks', () => {
         ...mockConfig,
         email: undefined,
       };
-      render(<HoursAndLocation config={configWithoutEmail} />);
+      render(
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <HoursAndLocation config={configWithoutEmail} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.queryByText('test@example.com')).not.toBeInTheDocument();
     });
   });
@@ -131,9 +176,11 @@ describe('Restaurant Home Page Blocks', () => {
   describe('CallToActionBar', () => {
     it('should render primary action button', () => {
       render(
-        <CallToActionBar
-          primaryAction={{ label: 'Order Now', onClick: () => {} }}
-        />
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <CallToActionBar
+            primaryAction={{ label: 'Order Now', onClick: () => {} }}
+          />
+        </RestaurantThemeProvider>
       );
       expect(screen.getByText('Order Now')).toBeInTheDocument();
     });
@@ -141,9 +188,11 @@ describe('Restaurant Home Page Blocks', () => {
     it('should call onClick when button is clicked', () => {
       const handleClick = vi.fn();
       render(
-        <CallToActionBar
-          primaryAction={{ label: 'Order Now', onClick: handleClick }}
-        />
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <CallToActionBar
+            primaryAction={{ label: 'Order Now', onClick: handleClick }}
+          />
+        </RestaurantThemeProvider>
       );
       const button = screen.getByText('Order Now');
       button.click();
@@ -152,9 +201,11 @@ describe('Restaurant Home Page Blocks', () => {
 
     it('should render as link when href is provided', () => {
       render(
-        <CallToActionBar
-          primaryAction={{ label: 'Order Now', href: '/order' }}
-        />
+        <RestaurantThemeProvider themeKey="sushi-dark">
+          <CallToActionBar
+            primaryAction={{ label: 'Order Now', href: '/order' }}
+          />
+        </RestaurantThemeProvider>
       );
       const link = screen.getByText('Order Now').closest('a');
       expect(link).toHaveAttribute('href', '/order');
