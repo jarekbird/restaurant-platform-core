@@ -16,14 +16,21 @@ export function MenuSectionList({ menu, className }: MenuSectionListProps) {
   return (
     <div className={cn('space-y-12', className)}>
       {menu.categories.map((category) => (
-        <div key={category.id}>
-          <MenuCategory category={category} />
+        <section key={category.id} className="mb-8">
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold">{category.name}</h2>
+            {category.description && (
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                {category.description}
+              </p>
+            )}
+          </div>
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {category.items.map((item) => (
               <MenuItemCard key={item.id} item={item} />
             ))}
           </div>
-        </div>
+        </section>
       ))}
     </div>
   );
