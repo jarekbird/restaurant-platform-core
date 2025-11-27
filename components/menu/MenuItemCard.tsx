@@ -1,3 +1,5 @@
+'use client';
+
 import { MenuItem } from '@/lib/schemas/menu';
 import { cn } from '@/lib/utils';
 
