@@ -1,0 +1,26 @@
+{
+  "id": "tataki",
+  "name": "Tataki",
+  "slug": "tataki",
+  "address": "123 Main Street",
+  "city": "San Francisco",
+  "state": "CA",
+  "zip": "94102",
+  "phone": "+1-415-555-0100",
+  "email": "info@tataki.com",
+  "hours": {
+    "mon": "11:00-21:00",
+    "tue": "11:00-21:00",
+    "wed": "11:00-21:00",
+    "thu": "11:00-21:00",
+    "fri": "11:00-22:00",
+    "sat": "12:00-22:00",
+    "sun": "12:00-20:00"
+  },
+  "cuisine": "Japanese Sushi",
+  "theme": "sushi-dark",
+  "heroImage": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200",
+  "logo": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400",
+  "orderOnlineEnabled": true
+}
+

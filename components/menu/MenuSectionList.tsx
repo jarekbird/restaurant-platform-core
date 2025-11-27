@@ -13,7 +13,7 @@ interface MenuSectionListProps {
  */
 export function MenuSectionList({ menu, className }: MenuSectionListProps) {
   return (
-    <div className={cn('space-y-12', className)}>
+    <div className={cn('container mx-auto px-4 py-12 space-y-12', className)}>
       {menu.categories.map((category) => (
         <section key={category.id} className="mb-8">
           <div className="mb-4">
@@ -26,7 +26,7 @@ export function MenuSectionList({ menu, className }: MenuSectionListProps) {
           </div>
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {category.items.map((item) => (
-              <MenuItemCard key={item.id} item={item} />
+              <MenuItemCard key={`${category.id}-${item.id}`} item={item} />
             ))}
           </div>
         </section>

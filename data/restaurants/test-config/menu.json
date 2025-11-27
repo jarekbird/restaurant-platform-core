@@ -1,0 +1,415 @@
+{
+  "id": "extracted-menu",
+  "name": "Main Menu",
+  "currency": "USD",
+  "categories": [
+    {
+      "id": "appetizer",
+      "name": "Appetizer",
+      "items": [
+        {
+          "id": "coconut-shrimp",
+          "name": "Coconut Shrimp",
+          "price": 6.99
+        },
+        {
+          "id": "edamame-salt-garlic",
+          "name": "Edamame (salt, Garlic)",
+          "price": 4.99
+        },
+        {
+          "id": "egg-roll",
+          "name": "Egg Roll",
+          "price": 4.99
+        },
+        {
+          "id": "gyoza",
+          "name": "Gyoza",
+          "price": 3.99
+        },
+        {
+          "id": "cheese-wonton",
+          "name": "Cheese Wonton",
+          "price": 4.99
+        },
+        {
+          "id": "avocado-bomb",
+          "name": "Avocado Bomb",
+          "price": 8.99
+        },
+        {
+          "id": "shrimp-veg-tempura",
+          "name": "Shrimp & Veg Tempura",
+          "price": 6.99
+        },
+        {
+          "id": "fried-calamari",
+          "name": "Fried Calamari",
+          "price": 7.99
+        },
+        {
+          "id": "rich-bomb",
+          "name": "Rich Bomb",
+          "price": 6.99
+        }
+      ]
+    },
+    {
+      "id": "side-order",
+      "name": "Side Order",
+      "items": [
+        {
+          "id": "steam-rice",
+          "name": "Steam Rice",
+          "price": 1.99
+        },
+        {
+          "id": "brown-rice",
+          "name": "Brown Rice",
+          "price": 1.99
+        },
+        {
+          "id": "house-salad",
+          "name": "House Salad",
+          "price": 1.99
+        },
+        {
+          "id": "miso-soup",
+          "name": "Miso Soup",
+          "price": 1.99
+        },
+        {
+          "id": "sunomono-salad",
+          "name": "Sunomono Salad",
+          "price": 3.99
+        },
+        {
+          "id": "seaweed-salad",
+          "name": "Seaweed Salad",
+          "price": 3.99
+        },
+        {
+          "id": "squid-salad",
+          "name": "Squid Salad",
+          "price": 5.99
+        },
+        {
+          "id": "ocean-salad-seaweed-squid",
+          "name": "Ocean Salad (seaweed & Squid)",
+          "price": 5.99
+        }
+      ]
+    },
+    {
+      "id": "sushi-maki",
+      "name": "Sushi Maki",
+      "items": [
+        {
+          "id": "avocado",
+          "name": "Avocado",
+          "price": 3.5
+        },
+        {
+          "id": "avocado-cucumber",
+          "name": "Avocado & Cucumber",
+          "price": 3.5
+        },
+        {
+          "id": "asparagus",
+          "name": "Asparagus",
+          "price": 3.5
+        },
+        {
+          "id": "eel",
+          "name": "Eel",
+          "price": 4.5
+        },
+        {
+          "id": "california",
+          "name": "California",
+          "price": 4.5
+        },
+        {
+          "id": "veggie",
+          "name": "Veggie",
+          "price": 4.5
+        },
+        {
+          "id": "sweet-potato",
+          "name": "Sweet Potato",
+          "price": 4.5
+        },
+        {
+          "id": "tuna",
+          "name": "Tuna",
+          "price": 4.5
+        },
+        {
+          "id": "spicy-tuna",
+          "name": "Spicy Tuna",
+          "price": 4.5
+        },
+        {
+          "id": "salmon",
+          "name": "Salmon",
+          "price": 4.5
+        },
+        {
+          "id": "spicy-salmon",
+          "name": "Spicy Salmon",
+          "price": 4.5
+        },
+        {
+          "id": "yellowtail",
+          "name": "Yellowtail",
+          "price": 4.5
+        },
+        {
+          "id": "spicy-yellowtail",
+          "name": "Spicy Yellowtail",
+          "price": 5
+        }
+      ]
+    },
+    {
+      "id": "classic-roll",
+      "name": "Classic Roll",
+      "items": [
+        {
+          "id": "alaska",
+          "name": "Alaska",
+          "description": "Real crab salad, cucumber topped salmon & avocado",
+          "price": 6.99
+        },
+        {
+          "id": "caterpillar",
+          "name": "Caterpillar",
+          "description": "Eel, cucumber, topped with avocado & fish egg sauce",
+          "price": 7.99
+        },
+        {
+          "id": "dragon",
+          "name": "Dragon",
+          "description": "Real crab salad, cucumber, topped with eel, avocado & unagi sauce",
+          "price": 7.99
+        },
+        {
+          "id": "spider",
+          "name": "Spider",
+          "description": "Soft shell crab, avocado, cucumber, lettuce & unagi sauce",
+          "price": 5.99
+        },
+        {
+          "id": "shrimp-tempura",
+          "name": "Shrimp tempura",
+          "description": "Tempura shrimp, crab, avocado, cucumber topped with fish egg & unagi sauce",
+          "price": 5.99
+        },
+        {
+          "id": "sunset",
+          "name": "Sunset",
+          "description": "Tempura shrimp, cucumber, avocado, topped with salmon, lemon & ponzu sauce",
+          "price": 5.99
+        },
+        {
+          "id": "philadelphia",
+          "name": "Philadelphia",
+          "description": "Salmon, avocado, cream cheese",
+          "price": 5.99
+        },
+        {
+          "id": "playboy",
+          "name": "Playboy",
+          "description": "Tempura shrimp, cucumber, topped with fresh tuna, avocado, spicy mayo & unagi sauce",
+          "price": 7.99
+        },
+        {
+          "id": "rainbow",
+          "name": "Rainbow",
+          "description": "Real crab salad, cucumber, avocado, topped with assorted fish",
+          "price": 7.99
+        },
+        {
+          "id": "ninja",
+          "name": "Ninja",
+          "description": "Eel, real crab salad, cream cheese, topped with baked salmon, crunch, spicy mayo & unagi",
+          "price": 8.99
+        },
+        {
+          "id": "honey",
+          "name": "Honey",
+          "description": "Real crab salad, cucumber, lime, topped with avocado & honey",
+          "price": 7.99
+        }
+      ]
+    },
+    {
+      "id": "deep-fried-roll",
+      "name": "Deep Fried Roll",
+      "items": [
+        {
+          "id": "vegas",
+          "name": "Vegas",
+          "description": "Salmon, cream cheese, avocado, spicy mayo & unagi sauce",
+          "price": 7.99
+        },
+        {
+          "id": "mexican",
+          "name": "Mexican",
+          "description": "Chicken, jalapenos, cream cheese, avocado, wasabi mayo & unagi sauce",
+          "price": 7.99
+        },
+        {
+          "id": "double-crunch",
+          "name": "Double Crunch",
+          "description": "Deep Fried California Roll (crab, cucumber, avocado)",
+          "price": 6.99
+        },
+        {
+          "id": "double-crunch",
+          "name": "Double Crunch",
+          "description": "Soft shell crab, tempura shrimp, cream cheese topped spicy tuna, crunch, spicy mayo & unagi sauce",
+          "price": 7.99
+        },
+        {
+          "id": "j-j",
+          "name": "J&J",
+          "description": "Spicy tuna rolled maki style with fish egg, spicy mayo & unagi sauce",
+          "price": 6.99
+        },
+        {
+          "id": "brad",
+          "name": "Brad",
+          "description": "Spicy tuna rolled maki style with fish egg, spicy mayo & unagi sauce",
+          "price": 6.99
+        },
+        {
+          "id": "lucky",
+          "name": "Lucky",
+          "description": "Eel, crab salad, avocado, cream cheese, scallions, spicy sauce, tempura & unagi sauce",
+          "price": 7.99
+        },
+        {
+          "id": "texas",
+          "name": "Texas",
+          "description": "Steak, crab salad, cream cheese, scallions, topped with fish egg, parsley, wasabi mayo & unagi sauce",
+          "price": 7.99
+        }
+      ]
+    },
+    {
+      "id": "tataki-special",
+      "name": "Tataki Special",
+      "items": [
+        {
+          "id": "american",
+          "name": "American",
+          "description": "Tuna, salmon, escolar, yellowtail, avocado with rolled soy paper, topped with crunchy, spicy mayo & unagi sauce",
+          "price": 13.99
+        },
+        {
+          "id": "clinton",
+          "name": "Clinton",
+          "description": "Real crab salad, oshinko, avocado, topped with fresh tuna, baked scallop, chili sauce, spicy mayo & unagi sauce",
+          "price": 12.99
+        },
+        {
+          "id": "canyon",
+          "name": "Canyon",
+          "description": "Tuna, cilantro, cream cheese, avocado, unagi sauce & sriracha",
+          "price": 7.99
+        },
+        {
+          "id": "crunch",
+          "name": "Crunch",
+          "description": "Salmon, cream cheese, avocado, topped with crunch, fish egg, spicy mayo & unagi sauce",
+          "price": 8.99
+        },
+        {
+          "id": "fire-tataki",
+          "name": "Fire Tataki",
+          "description": "Real crab salad, cream cheese, topped with salmon, crunch, spicy mayo & unagi sauce, and fire",
+          "price": 11.99
+        },
+        {
+          "id": "diamond",
+          "name": "Diamond",
+          "description": "Real crab mix, avocado, albacore, topped with tuna chili thread spicy mayo & sriracha",
+          "price": 9.99
+        },
+        {
+          "id": "jalapeno",
+          "name": "Jalapeno",
+          "description": "Tuna, jalapeno, avocado, topped with yellowtail, lime, cilantro & ponzu sauce",
+          "price": 8.99
+        },
+        {
+          "id": "mango-passion",
+          "name": "Mango Passion",
+          "description": "Yellowtail, asparagus topped with mango, salmon, daikon, scallions & mango sauce",
+          "price": 9.99
+        },
+        {
+          "id": "manhattan",
+          "name": "Manhattan",
+          "description": "Spicy tuna, albacore, escolar, crab stick crunch topped with fresh tuna spicy mayo & unagi sauce",
+          "price": 12.99
+        },
+        {
+          "id": "sushi-king",
+          "name": "Sushi King",
+          "description": "Avocado, cucumber, real crab salad, topped with spicy tuna, eel, fish egg, scallions, spicy mayo & unagi sauce",
+          "price": 8.99
+        },
+        {
+          "id": "shrimp-lover",
+          "name": "Shrimp Lover",
+          "description": "Tempura shrimp, real crab salad, cucumber, topped with ebi shrimp, avocado & unagi sauce",
+          "price": 8.99
+        },
+        {
+          "id": "sunomono",
+          "name": "Sunomono",
+          "description": "Salmon, cream cheese, real crab salad rolled in cucumber, fish egg, crunch & unagi sauce",
+          "price": 12.99
+        },
+        {
+          "id": "samurai",
+          "name": "Samurai",
+          "description": "Real crab salad, avocado, cucumber, topped with salmon, lemon, fish egg & ponzu sauce",
+          "price": 9.99
+        },
+        {
+          "id": "salmon-lover",
+          "name": "Salmon Lover",
+          "description": "Salmon, shrimp, avocado, crunch, topped with salmon, spicy mayo",
+          "price": 9.99
+        },
+        {
+          "id": "snow-mountain",
+          "name": "Snow Mountain",
+          "description": "Tempura shrimp, crab salad, topped with escolar, real crab salad",
+          "price": 8.99
+        },
+        {
+          "id": "mango",
+          "name": "Mango",
+          "description": "Real crab salad, avocado, mango, cream cheese, rolled in soy paper & special mango sauce",
+          "price": 8.99
+        },
+        {
+          "id": "sunburn",
+          "name": "Sunburn",
+          "description": "Spicy tuna, avocado, cucumber, topped with tuna torched with fish egg, scallions, spicy mayo",
+          "price": 8.99
+        },
+        {
+          "id": "fried-jalapeno",
+          "name": "Fried Jalapeno",
+          "description": "Spicy tuna, cream cheese, real crab salad top with salmon jalapeno special hot sauce",
+          "price": 12.99
+        }
+      ]
+    }
+  ]
+}
