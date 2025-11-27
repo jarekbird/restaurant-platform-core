@@ -27,3 +27,15 @@ export interface ChatAction {
   metadata?: Record<string, unknown>;
 }
 
+/**
+ * LLM JSON response format
+ */
+export interface LLMChatResponse {
+  response_to_user: string;
+  action?: {
+    type: ChatActionType;
+    itemId?: string;
+    quantity?: number;
+  } | null;
+}
+

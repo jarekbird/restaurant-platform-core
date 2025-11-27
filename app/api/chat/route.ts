@@ -87,7 +87,8 @@ export async function POST(request: NextRequest) {
     const response = await sendChatMessage(messages, menu, cart);
     
     return NextResponse.json({
-      message: response,
+      response_to_user: response.response_to_user,
+      action: response.action,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

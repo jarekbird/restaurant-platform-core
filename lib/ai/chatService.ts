@@ -7,7 +7,7 @@
 
 import { Menu } from '@/lib/schemas/menu';
 import { CartItem } from '@/components/order/useCart';
-import { ChatMessage, ChatRole } from './types';
+import { ChatMessage, ChatRole, LLMChatResponse } from './types';
 import OpenAI from 'openai';
 
 /**
@@ -55,22 +55,32 @@ ${cartItemsText}
 Total: $${cartTotal.toFixed(2)}
 
 INSTRUCTIONS:
-- When a customer asks to add an item, identify it from the menu and respond naturally with a friendly confirmation
-- Include the action in the format "Action: ADD_ITEM with ID [item-id]" at the end of your response
-- When adding items, calculate the new cart total and include it in your response (e.g., "I've added 2 Coconut Shrimp to your cart! Your cart total is now $13.98.")
-- When a customer asks to remove an item, identify it and respond with: "Action: REMOVE_ITEM with ID [item-id]"
-- When a customer asks to update quantity, respond with: "Action: UPDATE_QUANTITY with ID [item-id] quantity [number]"
-- When a customer asks about the cart, respond with: "Action: SHOW_CART"
-- When a customer is ready to checkout, respond with: "Action: CHECKOUT"
-- Be friendly, helpful, and confirm actions clearly with natural language
+- You must respond with valid JSON in this exact format:
+  {
+    "response_to_user": "Your friendly, natural response to the customer",
+    "action": {
+      "type": "ADD_ITEM" | "REMOVE_ITEM" | "UPDATE_QUANTITY" | "SHOW_CART" | "CHECKOUT" | "ANSWER_QUESTION",
+      "itemId": "item-id-from-menu" (required for ADD_ITEM, REMOVE_ITEM, UPDATE_QUANTITY),
+      "quantity": number (required for ADD_ITEM and UPDATE_QUANTITY)
+    }
+  }
+
+- When a customer asks to add an item, identify it from the menu and set action.type to "ADD_ITEM"
+- When adding items, calculate the new cart total and include it in your response_to_user (e.g., "I've added 2 Coconut Shrimp to your cart! Your cart total is now $13.98.")
+- When a customer asks to remove an item, set action.type to "REMOVE_ITEM"
+- When a customer asks to update quantity, set action.type to "UPDATE_QUANTITY"
+- When a customer asks about the cart, set action.type to "SHOW_CART"
+- When a customer is ready to checkout, set action.type to "CHECKOUT"
+- For general questions, set action.type to "ANSWER_QUESTION" or set action to null
+- Be friendly, helpful, and confirm actions clearly with natural language in response_to_user
 - Always use the exact item ID from the menu (e.g., "coconut-shrimp", not "Coconut Shrimp")
 - If an item is not found, politely let the customer know and suggest similar items
 - When calculating new cart totals after adding items, add the item price × quantity to the current cart total
+- If no action is needed (just answering a question), set action to null
 
 IMPORTANT: 
-- Always include the action in the format "Action: [ACTION_TYPE] with ID [item-id]" when performing cart operations
-- Your response should be natural and conversational, with the action tag at the end
-- Include the updated cart total in your response when adding, removing, or updating items`;
+- Always return valid JSON with response_to_user and action fields
+- Include the updated cart total in response_to_user when adding, removing, or updating items`;
 }
 
 /**
@@ -99,20 +109,23 @@ function getOpenAIClient(): OpenAI | null {
  * @param messages - Conversation history
  * @param menu - Current menu data
  * @param cart - Current cart state
- * @returns AI response text
+ * @returns LLM response with response_to_user and action
  * @throws Error if API call fails or API key is missing
  */
 export async function sendChatMessage(
   messages: ChatMessage[],
   menu: Menu,
   cart: CartItem[]
-): Promise<string> {
+): Promise<LLMChatResponse> {
   const systemPrompt = buildSystemPrompt(menu, cart);
   const client = getOpenAIClient();
   
   // If no API key, return fallback response
   if (!client) {
-    return 'AI assistant is currently unavailable. Please use the menu to add items to your cart.';
+    return {
+      response_to_user: 'AI assistant is currently unavailable. Please use the menu to add items to your cart.',
+      action: null,
+    };
   }
   
   try {
@@ -154,6 +167,7 @@ export async function sendChatMessage(
       messages: openAIMessages,
       temperature: 0.7,
       max_tokens: 500,
+      response_format: { type: 'json_object' }, // Request JSON response
     });
     
     const content = response.choices[0]?.message?.content;
@@ -161,7 +175,25 @@ export async function sendChatMessage(
       throw new Error('No content in AI response');
     }
     
-    return content;
+    // Parse JSON response
+    try {
+      const parsed = JSON.parse(content) as LLMChatResponse;
+      
+      // Validate structure
+      if (!parsed.response_to_user || typeof parsed.response_to_user !== 'string') {
+        throw new Error('Invalid response format: missing response_to_user');
+      }
+      
+      return parsed;
+    } catch (parseError) {
+      console.error('Error parsing LLM JSON response:', parseError);
+      console.error('Raw response:', content);
+      // Fallback: return the raw content as response_to_user
+      return {
+        response_to_user: content,
+        action: null,
+      };
+    }
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
     

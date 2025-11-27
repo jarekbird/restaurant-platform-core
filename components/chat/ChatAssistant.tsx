@@ -7,7 +7,6 @@ import { ChatInput } from './ChatInput';
 import { Menu } from '@/lib/schemas/menu';
 import { CartItem } from '@/components/order/useCart';
 import { ChatMessage as ChatMessageTypeLib, ChatRole } from '@/lib/ai/types';
-import { parseChatAction } from '@/lib/ai/actionParser';
 import { useCartContext } from '@/components/order/CartProvider';
 import { useOptionalToast } from '@/lib/hooks/useOptionalToast';
 
@@ -77,11 +76,12 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
       
       const data = await response.json();
       
-      // Parse action from AI response to execute cart operations
-      const action = parseChatAction(data.message, menu);
+      // Extract response and action from JSON structure
+      const responseToUser = data.response_to_user || data.message || 'Sorry, I encountered an error. Please try again.';
+      const action = data.action;
       
       // Execute cart action if found
-      if (action && (action.type === 'ADD_ITEM' || action.type === 'REMOVE_ITEM' || action.type === 'UPDATE_QUANTITY' || action.type === 'CHECKOUT')) {
+      if (action && action.type && (action.type === 'ADD_ITEM' || action.type === 'REMOVE_ITEM' || action.type === 'UPDATE_QUANTITY' || action.type === 'CHECKOUT')) {
         try {
           switch (action.type) {
             case 'ADD_ITEM':
@@ -154,11 +154,11 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
         }
       }
       
-      // Always show the LLM's response - it already has the menu and cart context
+      // Show the LLM's response to the user (response_to_user field)
       // The LLM calculates and includes the updated cart total in its response
       const assistantMessage: ChatMessageType = {
         role: 'assistant',
-        content: data.message,
+        content: responseToUser,
         timestamp: new Date(data.timestamp),
       };
       setMessages((prev) => [...prev, assistantMessage]);
