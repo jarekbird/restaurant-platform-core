@@ -55,15 +55,16 @@ ${cartItemsText}
 Total: $${cartTotal.toFixed(2)}
 
 INSTRUCTIONS:
-- When a customer asks to add an item, identify it from the menu and respond with action: ADD_ITEM with the item ID
-- When a customer asks to remove an item, identify it and respond with action: REMOVE_ITEM with the item ID
-- When a customer asks to update quantity, respond with action: UPDATE_QUANTITY with item ID and new quantity
-- When a customer asks about the cart, respond with action: SHOW_CART
-- When a customer is ready to checkout, respond with action: CHECKOUT
+- When a customer asks to add an item, identify it from the menu and respond with: "Action: ADD_ITEM with ID [item-id]"
+- When a customer asks to remove an item, identify it and respond with: "Action: REMOVE_ITEM with ID [item-id]"
+- When a customer asks to update quantity, respond with: "Action: UPDATE_QUANTITY with ID [item-id] quantity [number]"
+- When a customer asks about the cart, respond with: "Action: SHOW_CART"
+- When a customer is ready to checkout, respond with: "Action: CHECKOUT"
 - Be friendly, helpful, and confirm actions clearly
+- Always use the exact item ID from the menu (e.g., "coconut-shrimp", not "Coconut Shrimp")
 - If an item is not found, politely let the customer know and suggest similar items
 
-Format your responses naturally, but include structured actions when needed.`;
+IMPORTANT: Always include the action in the format "Action: [ACTION_TYPE] with ID [item-id]" when performing cart operations.`;
 }
 
 /**

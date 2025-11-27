@@ -86,5 +86,32 @@ describe('parseChatAction', () => {
     expect(action?.type).toBe('ADD_ITEM');
     expect(action?.itemId).toBe('item-2');
   });
+
+  it('should parse action with "with ID" format', () => {
+    const response = "I've added two Coconut Shrimp to your cart! Action: ADD_ITEM with ID coconut-shrimp";
+    const mockMenuWithCoconut = menuSchema.parse({
+      id: 'menu-1',
+      name: 'Test Menu',
+      currency: 'USD',
+      categories: [
+        {
+          id: 'cat-1',
+          name: 'Appetizers',
+          items: [
+            {
+              id: 'coconut-shrimp',
+              name: 'Coconut Shrimp',
+              price: 6.99,
+            },
+          ],
+        },
+      ],
+    });
+    const action = parseChatAction(response, mockMenuWithCoconut);
+    
+    expect(action).not.toBeNull();
+    expect(action?.type).toBe('ADD_ITEM');
+    expect(action?.itemId).toBe('coconut-shrimp');
+  });
 });
 

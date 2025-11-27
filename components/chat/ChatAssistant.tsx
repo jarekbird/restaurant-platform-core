@@ -77,12 +77,13 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
       
       const data = await response.json();
       
-      // Parse action from AI response
+      // Parse action from AI response FIRST, before showing the message
       const action = parseChatAction(data.message, menu);
       
-      // Execute cart action if found
-      if (action) {
+      // Execute cart action if found - this takes priority over the AI's message
+      if (action && (action.type === 'ADD_ITEM' || action.type === 'REMOVE_ITEM' || action.type === 'UPDATE_QUANTITY' || action.type === 'SHOW_CART' || action.type === 'CHECKOUT')) {
         let confirmationMessage = '';
+        let actionSucceeded = false;
         
         try {
           switch (action.type) {
@@ -94,6 +95,34 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                   .find((item) => item.id === action.itemId);
                 
                 if (!menuItem) {
+                  // Try to find by name as fallback
+                  const itemByName = menu.categories
+                    .flatMap((cat) => cat.items)
+                    .find((item) => 
+                      item.name.toLowerCase().includes(action.itemId.toLowerCase()) ||
+                      action.itemId.toLowerCase().includes(item.name.toLowerCase())
+                    );
+                  
+                  if (itemByName) {
+                    const quantity = action.quantity || 1;
+                    for (let i = 0; i < quantity; i++) {
+                      cartContext.addItem({
+                        id: itemByName.id,
+                        name: itemByName.name,
+                        price: itemByName.price,
+                      });
+                    }
+                    confirmationMessage = `✓ Added ${quantity} ${itemByName.name}${quantity > 1 ? 's' : ''} to your cart.`;
+                    actionSucceeded = true;
+                    
+                    const newCartTotal = cartContext.items.reduce(
+                      (sum, item) => sum + item.price * item.quantity,
+                      0
+                    );
+                    confirmationMessage += ` Your cart total is now $${newCartTotal.toFixed(2)}.`;
+                    break;
+                  }
+                  
                   confirmationMessage = `Sorry, I couldn't find that item on the menu. Please try again.`;
                   break;
                 }
@@ -112,6 +141,7 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                   });
                 }
                 confirmationMessage = `✓ Added ${quantity} ${menuItem.name}${quantity > 1 ? 's' : ''} to your cart.`;
+                actionSucceeded = true;
                 
                 // Add cart summary
                 const newCartTotal = cartContext.items.reduce(
@@ -210,24 +240,40 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
           toast.error('Failed to process cart action');
         }
         
-        // Add confirmation message to chat if action was executed
-        if (confirmationMessage) {
+        // If action succeeded, show confirmation message instead of AI's message
+        if (actionSucceeded && confirmationMessage) {
           const confirmationMsg: ChatMessageType = {
             role: 'assistant',
             content: confirmationMessage,
             timestamp: new Date(),
           };
           setMessages((prev) => [...prev, confirmationMsg]);
+        } else if (confirmationMessage && !actionSucceeded) {
+          // Show error message if action failed
+          const errorMsg: ChatMessageType = {
+            role: 'assistant',
+            content: confirmationMessage,
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, errorMsg]);
+        } else if (!action || action.type === 'ANSWER_QUESTION') {
+          // Only show AI's message if no action was found or it's just answering a question
+          const assistantMessage: ChatMessageType = {
+            role: 'assistant',
+            content: data.message,
+            timestamp: new Date(data.timestamp),
+          };
+          setMessages((prev) => [...prev, assistantMessage]);
         }
+      } else {
+        // No action found, show AI's response
+        const assistantMessage: ChatMessageType = {
+          role: 'assistant',
+          content: data.message,
+          timestamp: new Date(data.timestamp),
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
       }
-      
-      // Add assistant response
-      const assistantMessage: ChatMessageType = {
-        role: 'assistant',
-        content: data.message,
-        timestamp: new Date(data.timestamp),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error calling chat API:', error);
       
