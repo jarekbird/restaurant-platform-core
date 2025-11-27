@@ -72,39 +72,45 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
   return (
     <RestaurantThemeProvider themeKey={config.theme}>
       <div className="flex min-h-screen flex-col">
-      {/* Header with TanStack icon and cart button */}
+      {/* Header with TanStack devtools button and cart button */}
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
-        <div className="container mx-auto flex items-center justify-between px-4 py-4">
-          {/* TanStack icon on the left */}
+        <div className="flex w-full items-center justify-between px-4 py-4">
+          {/* TanStack devtools button on the left */}
           <div className="flex items-center">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-black dark:text-white"
+            <button
+              id="tanstack-devtools-toggle"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              aria-label="Toggle TanStack Query Devtools"
             >
-              <path
-                d="M16 2L2 10V22L16 30L30 22V10L16 2Z"
-                fill="currentColor"
-                fillOpacity="0.1"
-              />
-              <path
-                d="M16 2L2 10L16 18L30 10L16 2Z"
-                fill="currentColor"
-              />
-              <path
-                d="M2 10V22L16 30V18L2 10Z"
-                fill="currentColor"
-                fillOpacity="0.6"
-              />
-              <path
-                d="M30 10V22L16 30V18L30 10Z"
-                fill="currentColor"
-                fillOpacity="0.4"
-              />
-            </svg>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-black dark:text-white"
+              >
+                <path
+                  d="M16 2L2 10V22L16 30L30 22V10L16 2Z"
+                  fill="currentColor"
+                  fillOpacity="0.1"
+                />
+                <path
+                  d="M16 2L2 10L16 18L30 10L16 2Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M2 10V22L16 30V18L2 10Z"
+                  fill="currentColor"
+                  fillOpacity="0.6"
+                />
+                <path
+                  d="M30 10V22L16 30V18L30 10Z"
+                  fill="currentColor"
+                  fillOpacity="0.4"
+                />
+              </svg>
+            </button>
           </div>
           {/* Cart Button on the far right */}
           <div className="flex items-center">
