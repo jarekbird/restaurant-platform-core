@@ -28,7 +28,9 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
     setIsCartOpen(!isCartOpen);
   };
   
-  const handleCartClose = () => {
+  // Will be used in next task when CartDrawer is integrated
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleCartClose = () => {
     setIsCartOpen(false);
   };
   
