@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { ChatMessage, ChatMessage as ChatMessageType } from './ChatMessage';
+import { ChatInput } from './ChatInput';
 
 interface ChatAssistantProps {
   className?: string;
@@ -13,9 +15,36 @@ interface ChatAssistantProps {
  */
 export function ChatAssistant({ className }: ChatAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessageType[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleSend = (message: string) => {
+    // Add user message
+    const userMessage: ChatMessageType = {
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Set loading state (AI response will be added in later tasks)
+    setIsLoading(true);
+    
+    // For now, just add a placeholder response
+    // Will be replaced with actual AI call in later tasks
+    setTimeout(() => {
+      const assistantMessage: ChatMessageType = {
+        role: 'assistant',
+        content: 'AI response will be implemented in next tasks',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsLoading(false);
+    }, 100);
   };
 
   return (
@@ -60,18 +89,33 @@ export function ChatAssistant({ className }: ChatAssistantProps) {
               </button>
             </div>
 
-            {/* Chat Messages Area - Placeholder */}
+            {/* Chat Messages Area */}
             <div className="flex-1 overflow-y-auto p-4">
-              <p className="text-center text-gray-500 dark:text-gray-400">
-                Chat functionality will be implemented in next tasks
-              </p>
+              {messages.length === 0 ? (
+                <p className="text-center text-gray-500 dark:text-gray-400">
+                  Start a conversation with the ordering assistant
+                </p>
+              ) : (
+                <div>
+                  {messages.map((message, index) => (
+                    <ChatMessage key={index} message={message} />
+                  ))}
+                  {isLoading && (
+                    <div className="mb-4 flex justify-start">
+                      <div className="rounded-lg bg-gray-100 px-4 py-2 dark:bg-gray-800">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Thinking...
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Input Area - Placeholder */}
+            {/* Input Area */}
             <div className="border-t border-gray-200 p-4 dark:border-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Input will be implemented in next tasks
-              </p>
+              <ChatInput onSend={handleSend} disabled={isLoading} />
             </div>
           </div>
         </div>
