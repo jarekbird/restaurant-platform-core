@@ -15,6 +15,12 @@ interface ChatAssistantWrapperProps {
 export function ChatAssistantWrapper({ menu }: ChatAssistantWrapperProps) {
   const { items } = useCartContext();
   
-  return <ChatAssistant menu={menu} cart={items} />;
+  // Optional callback for cart actions (can be used for notifications)
+  const handleCartAction = (action: string) => {
+    // Could show a toast notification here
+    console.log('Cart action:', action);
+  };
+  
+  return <ChatAssistant menu={menu} cart={items} onCartAction={handleCartAction} />;
 }
 

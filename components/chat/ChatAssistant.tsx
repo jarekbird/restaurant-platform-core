@@ -7,10 +7,13 @@ import { ChatInput } from './ChatInput';
 import { Menu } from '@/lib/schemas/menu';
 import { CartItem } from '@/components/order/useCart';
 import { ChatMessage as ChatMessageTypeLib } from '@/lib/ai/types';
+import { parseChatAction } from '@/lib/ai/actionParser';
+import { useCartContext } from '@/components/order/CartProvider';
 
 interface ChatAssistantProps {
   menu: Menu;
   cart: CartItem[];
+  onCartAction?: (action: string) => void;
   className?: string;
 }
 
@@ -18,10 +21,11 @@ interface ChatAssistantProps {
  * ChatAssistant component
  * Collapsible sidebar (desktop) or bottom drawer (mobile) for AI-powered ordering assistance
  */
-export function ChatAssistant({ menu, cart, className }: ChatAssistantProps) {
+export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const cartContext = useCartContext();
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -70,6 +74,64 @@ export function ChatAssistant({ menu, cart, className }: ChatAssistantProps) {
       }
       
       const data = await response.json();
+      
+      // Parse action from AI response
+      const action = parseChatAction(data.message, menu);
+      
+      // Execute cart action if found
+      if (action) {
+        switch (action.type) {
+          case 'ADD_ITEM':
+            if (action.itemId) {
+              const menuItem = menu.categories
+                .flatMap((cat) => cat.items)
+                .find((item) => item.id === action.itemId);
+              
+              if (menuItem) {
+                const quantity = action.quantity || 1;
+                for (let i = 0; i < quantity; i++) {
+                  cartContext.addItem({
+                    id: menuItem.id,
+                    name: menuItem.name,
+                    price: menuItem.price,
+                  });
+                }
+                if (onCartAction) {
+                  onCartAction(`Added ${quantity} ${menuItem.name} to cart`);
+                }
+              }
+            }
+            break;
+          case 'REMOVE_ITEM':
+            if (action.itemId) {
+              cartContext.removeItem(action.itemId);
+              if (onCartAction) {
+                onCartAction(`Removed item from cart`);
+              }
+            }
+            break;
+          case 'UPDATE_QUANTITY':
+            if (action.itemId && action.quantity !== undefined) {
+              cartContext.updateQuantity(action.itemId, action.quantity);
+              if (onCartAction) {
+                onCartAction(`Updated quantity`);
+              }
+            }
+            break;
+          case 'SHOW_CART':
+            // Cart is already visible via OrderButton
+            if (onCartAction) {
+              onCartAction('Showing cart');
+            }
+            break;
+          case 'CHECKOUT':
+            // Checkout will be handled by cart drawer
+            if (onCartAction) {
+              onCartAction('Opening checkout');
+            }
+            break;
+        }
+      }
       
       // Add assistant response
       const assistantMessage: ChatMessageType = {
