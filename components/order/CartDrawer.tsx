@@ -27,7 +27,10 @@ export function CartDrawer({
   onClose,
   items,
   className,
+  // Will be used in next task when UI controls are added
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRemoveItem,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onUpdateQuantity,
 }: CartDrawerProps) {
   if (!isOpen) {
