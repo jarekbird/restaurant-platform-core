@@ -4,8 +4,13 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ChatMessage, ChatMessage as ChatMessageType } from './ChatMessage';
 import { ChatInput } from './ChatInput';
+import { Menu } from '@/lib/schemas/menu';
+import { CartItem } from '@/components/order/useCart';
+import { ChatMessage as ChatMessageTypeLib } from '@/lib/ai/types';
 
 interface ChatAssistantProps {
+  menu: Menu;
+  cart: CartItem[];
   className?: string;
 }
 
@@ -13,7 +18,7 @@ interface ChatAssistantProps {
  * ChatAssistant component
  * Collapsible sidebar (desktop) or bottom drawer (mobile) for AI-powered ordering assistance
  */
-export function ChatAssistant({ className }: ChatAssistantProps) {
+export function ChatAssistant({ menu, cart, className }: ChatAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +27,7 @@ export function ChatAssistant({ className }: ChatAssistantProps) {
     setIsOpen(!isOpen);
   };
 
-  const handleSend = (message: string) => {
+  const handleSend = async (message: string) => {
     // Add user message
     const userMessage: ChatMessageType = {
       role: 'user',
@@ -31,20 +36,61 @@ export function ChatAssistant({ className }: ChatAssistantProps) {
     };
     setMessages((prev) => [...prev, userMessage]);
 
-    // Set loading state (AI response will be added in later tasks)
+    // Set loading state
     setIsLoading(true);
     
-    // For now, just add a placeholder response
-    // Will be replaced with actual AI call in later tasks
-    setTimeout(() => {
+    try {
+      // Convert messages to API format
+      const apiMessages: ChatMessageTypeLib[] = [
+        ...messages,
+        {
+          role: 'user',
+          content: message,
+        },
+      ].map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+      
+      // Call API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: apiMessages,
+          menu,
+          cart,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+      
+      const data = await response.json();
+      
+      // Add assistant response
       const assistantMessage: ChatMessageType = {
         role: 'assistant',
-        content: 'AI response will be implemented in next tasks',
-        timestamp: new Date(),
+        content: data.message,
+        timestamp: new Date(data.timestamp),
       };
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error calling chat API:', error);
+      
+      // Add error message
+      const errorMessage: ChatMessageType = {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 100);
+    }
   };
 
   return (
