@@ -1,10 +1,11 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import Image from 'next/image';
 import { RestaurantConfig } from '@/lib/schemas/restaurant';
 import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 import { useCartContext } from '@/components/order/CartProvider';
+import { OrderButton } from '@/components/order/OrderButton';
 
 interface RestaurantLayoutProps {
   config: RestaurantConfig;
@@ -17,9 +18,19 @@ interface RestaurantLayoutProps {
  * Accepts restaurantConfig to display restaurant-specific information
  */
 export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
-  // Access cart context - will be used in next tasks for cart UI
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _cart = useCartContext();
+  // Access cart context for cart functionality
+  const { itemCount } = useCartContext();
+  
+  // Manage cart drawer open/close state
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  
+  const handleCartToggle = () => {
+    setIsCartOpen(!isCartOpen);
+  };
+  
+  const handleCartClose = () => {
+    setIsCartOpen(false);
+  };
   
   const formatHours = (hours: RestaurantConfig['hours']) => {
     const dayNames: Record<string, string> = {
@@ -61,6 +72,12 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
             <span className="text-sm text-gray-600 dark:text-gray-400">Menu</span>
             <span className="text-sm text-gray-600 dark:text-gray-400">About</span>
             <span className="text-sm text-gray-600 dark:text-gray-400">Contact</span>
+            {/* Order Button with cart badge */}
+            <OrderButton
+              onClick={handleCartToggle}
+              label="Cart"
+              itemCount={itemCount}
+            />
           </nav>
         </div>
       </header>
