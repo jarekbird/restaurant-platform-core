@@ -112,7 +112,7 @@ function transformLLMResponse(response: unknown): unknown {
     return response;
   }
 
-  const responseObj = response as Record<string, unknown>;
+  let responseObj = response as Record<string, unknown>;
 
   // Check if response already has the expected structure
   if ('id' in responseObj && 'name' in responseObj && 'categories' in responseObj && Array.isArray(responseObj.categories)) {
@@ -125,23 +125,69 @@ function transformLLMResponse(response: unknown): unknown {
     responseObj = menuData; // Continue processing with unwrapped data
   }
 
-  // Check if response has category-like structure (keys are category names, values are item arrays)
+  // Check if response has category-like structure (keys are category names, values are item arrays or objects with arrays)
   const categoryKeys = Object.keys(responseObj);
-  const looksLikeCategoryStructure = categoryKeys.length > 0 && 
-    categoryKeys.every(key => Array.isArray(responseObj[key]));
+  const hasCategoryStructure = categoryKeys.length > 0 && 
+    categoryKeys.some(key => {
+      const value = responseObj[key];
+      return Array.isArray(value) || 
+        (typeof value === 'object' && value !== null && 
+         (Array.isArray((value as Record<string, unknown>).curries) || 
+          Array.isArray((value as Record<string, unknown>).items)));
+    });
 
-  if (looksLikeCategoryStructure) {
+  if (hasCategoryStructure) {
     // Transform to expected schema
     const categories = categoryKeys.map((categoryName) => {
-      const items = (responseObj[categoryName] as Array<Record<string, unknown>>) || [];
+      const categoryValue = responseObj[categoryName];
+      
+      let items: Array<Record<string, unknown>> = [];
+      let categoryDescription: string | undefined;
+      let categoryPrice: string | number | undefined;
+      
+      if (Array.isArray(categoryValue)) {
+        // Direct array of items
+        items = categoryValue;
+      } else if (typeof categoryValue === 'object' && categoryValue !== null) {
+        const categoryObj = categoryValue as Record<string, unknown>;
+        // Check for nested arrays (curries, items, etc.)
+        if (Array.isArray(categoryObj.curries)) {
+          items = categoryObj.curries;
+        } else if (Array.isArray(categoryObj.items)) {
+          items = categoryObj.items;
+        } else if (Array.isArray(categoryObj.menu)) {
+          items = categoryObj.menu;
+        }
+        // Extract category-level metadata
+        categoryDescription = categoryObj.description as string | undefined;
+        categoryPrice = categoryObj.price as string | number | undefined;
+      }
+      
+      // Parse category price if it's a string (e.g., "$15.99")
+      let defaultPrice = 0;
+      if (categoryPrice) {
+        if (typeof categoryPrice === 'string') {
+          const priceMatch = categoryPrice.match(/[\d.]+/);
+          if (priceMatch) {
+            defaultPrice = parseFloat(priceMatch[0]);
+          }
+        } else {
+          defaultPrice = categoryPrice;
+        }
+      }
+      
       return {
         id: generateId(categoryName),
-        name: categoryName,
+        name: categoryName.split('_').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' '),
+        description: categoryDescription,
         items: items.map((item, itemIndex) => ({
           id: generateId(item.name as string || item.id as string || `item-${categoryName}-${itemIndex}`),
           name: item.name || 'Unnamed Item',
           description: item.description,
-          price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price || 0)),
+          price: typeof item.price === 'number' ? item.price : 
+                 (item.price ? parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || defaultPrice : defaultPrice),
           image: item.image,
           tags: item.tags,
           modifiers: item.modifiers,

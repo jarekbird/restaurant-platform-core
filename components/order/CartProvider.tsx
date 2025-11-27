@@ -2,6 +2,7 @@
 
 import { createContext, useContext, ReactNode } from 'react';
 import { useCart, CartItem } from './useCart';
+import { useOptionalToast } from '@/lib/hooks/useOptionalToast';
 
 /**
  * CartContextValue interface
@@ -40,9 +41,32 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   // Wire CartProvider to useCart hook
   const cart = useCart();
+  
+  // Get toast context (optional - returns no-ops if not available)
+  const toast = useOptionalToast();
+
+  // Wrap cart operations with toast notifications
+  const wrappedCart = {
+    ...cart,
+    addItem: (item: Omit<CartItem, 'quantity'>) => {
+      cart.addItem(item);
+      toast.success(`${item.name} added to cart`);
+    },
+    removeItem: (itemId: string) => {
+      const item = cart.items.find((i) => i.id === itemId);
+      cart.removeItem(itemId);
+      if (item) {
+        toast.info(`${item.name} removed from cart`);
+      }
+    },
+    clearCart: () => {
+      cart.clearCart();
+      toast.info('Cart cleared');
+    },
+  };
 
   return (
-    <CartContext.Provider value={cart}>{children}</CartContext.Provider>
+    <CartContext.Provider value={wrappedCart}>{children}</CartContext.Provider>
   );
 }
 

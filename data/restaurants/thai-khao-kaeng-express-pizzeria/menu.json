@@ -1,0 +1,24 @@
+{
+  "id": "extracted-menu",
+  "name": "Main Menu",
+  "currency": "USD",
+  "categories": [
+    {
+      "id": "menu-items",
+      "name": "Menu Items",
+      "items": [
+        {
+          "id": "item-menu-items-0",
+          "name": "Unnamed Item",
+          "price": 0
+        },
+        {
+          "id": "item-menu-items-1",
+          "name": "Unnamed Item",
+          "description": "Choice of chicken, pork or beef $1.99 shrimp for $2.99. Served with white rice.",
+          "price": 15.99
+        }
+      ]
+    }
+  ]
+}

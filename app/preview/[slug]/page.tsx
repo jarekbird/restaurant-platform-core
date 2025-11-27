@@ -6,6 +6,7 @@ import { HoursAndLocation } from '@/components/restaurant/HoursAndLocation';
 import { CallToActionBar } from '@/components/restaurant/CallToActionBar';
 import { CartProvider } from '@/components/order/CartProvider';
 import { ChatAssistantWrapper } from '@/components/chat/ChatAssistantWrapper';
+import { ToastProvider } from '@/components/ui/ToastProvider';
 import { notFound } from 'next/navigation';
 
 interface PreviewPageProps {
@@ -29,22 +30,24 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
   const { config, menu } = restaurant;
 
   return (
-    <CartProvider>
-      <RestaurantLayout config={config}>
-        <HeroSection config={config} />
-        <MenuSectionList menu={menu} />
-        <HoursAndLocation config={config} />
-        {config.orderOnlineEnabled && (
-          <CallToActionBar
-            primaryAction={{
-              label: 'Order Now',
-              href: '#order',
-            }}
-          />
-        )}
-      </RestaurantLayout>
-      {config.orderOnlineEnabled && <ChatAssistantWrapper menu={menu} />}
-    </CartProvider>
+    <ToastProvider>
+      <CartProvider>
+        <RestaurantLayout config={config}>
+          <HeroSection config={config} />
+          <MenuSectionList menu={menu} />
+          <HoursAndLocation config={config} />
+          {config.orderOnlineEnabled && (
+            <CallToActionBar
+              primaryAction={{
+                label: 'Order Now',
+                href: '#order',
+              }}
+            />
+          )}
+        </RestaurantLayout>
+        {config.orderOnlineEnabled && <ChatAssistantWrapper menu={menu} />}
+      </CartProvider>
+    </ToastProvider>
   );
 }
 
