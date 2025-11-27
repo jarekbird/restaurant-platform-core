@@ -80,6 +80,8 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
       
       // Execute cart action if found
       if (action) {
+        let confirmationMessage = '';
+        
         switch (action.type) {
           case 'ADD_ITEM':
             if (action.itemId) {
@@ -96,40 +98,82 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                     price: menuItem.price,
                   });
                 }
-                if (onCartAction) {
-                  onCartAction(`Added ${quantity} ${menuItem.name} to cart`);
-                }
+                confirmationMessage = `✓ Added ${quantity} ${menuItem.name}${quantity > 1 ? 's' : ''} to your cart.`;
+                
+                // Add cart summary
+                const newCartTotal = cartContext.items.reduce(
+                  (sum, item) => sum + item.price * item.quantity,
+                  0
+                );
+                confirmationMessage += ` Your cart total is now $${newCartTotal.toFixed(2)}.`;
               }
             }
             break;
           case 'REMOVE_ITEM':
             if (action.itemId) {
-              cartContext.removeItem(action.itemId);
-              if (onCartAction) {
-                onCartAction(`Removed item from cart`);
+              const itemToRemove = cart.find((item) => item.id === action.itemId);
+              if (itemToRemove) {
+                cartContext.removeItem(action.itemId);
+                confirmationMessage = `✓ Removed ${itemToRemove.name} from your cart.`;
+                
+                // Add updated cart summary
+                const updatedCartTotal = cartContext.items.reduce(
+                  (sum, item) => sum + item.price * item.quantity,
+                  0
+                );
+                if (cartContext.items.length > 0) {
+                  confirmationMessage += ` Your cart total is now $${updatedCartTotal.toFixed(2)}.`;
+                } else {
+                  confirmationMessage += ` Your cart is now empty.`;
+                }
               }
             }
             break;
           case 'UPDATE_QUANTITY':
             if (action.itemId && action.quantity !== undefined) {
-              cartContext.updateQuantity(action.itemId, action.quantity);
-              if (onCartAction) {
-                onCartAction(`Updated quantity`);
+              const itemToUpdate = cart.find((item) => item.id === action.itemId);
+              if (itemToUpdate) {
+                cartContext.updateQuantity(action.itemId, action.quantity);
+                confirmationMessage = `✓ Updated ${itemToUpdate.name} quantity to ${action.quantity}.`;
+                
+                // Add cart summary
+                const updatedTotal = cartContext.items.reduce(
+                  (sum, item) => sum + item.price * item.quantity,
+                  0
+                );
+                confirmationMessage += ` Your cart total is now $${updatedTotal.toFixed(2)}.`;
               }
             }
             break;
           case 'SHOW_CART':
-            // Cart is already visible via OrderButton
-            if (onCartAction) {
-              onCartAction('Showing cart');
+            // Generate cart summary
+            if (cart.length === 0) {
+              confirmationMessage = 'Your cart is empty. Would you like to add something?';
+            } else {
+              const cartSummary = cart
+                .map((item) => `${item.name} × ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`)
+                .join('\n');
+              const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+              confirmationMessage = `Your cart contains:\n${cartSummary}\n\nTotal: $${cartTotal.toFixed(2)}`;
             }
             break;
           case 'CHECKOUT':
             // Checkout will be handled by cart drawer
+            confirmationMessage = 'Opening checkout form. Please fill in your details to complete your order.';
             if (onCartAction) {
               onCartAction('Opening checkout');
             }
             break;
+        }
+        
+        // Add confirmation message to chat if action was executed
+        if (confirmationMessage) {
+          const confirmationMsg: ChatMessageType = {
+            role: 'assistant',
+            content: confirmationMessage,
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, confirmationMsg]);
         }
       }
       
