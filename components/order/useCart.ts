@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export interface CartItem {
   id: string;
@@ -23,12 +23,64 @@ interface UseCartReturn {
   itemCount: number;
 }
 
+const CART_STORAGE_KEY = 'restaurant-cart';
+
+/**
+ * Load cart from localStorage
+ * Only runs on client side to avoid hydration mismatches
+ */
+function loadCartFromStorage(): CartItem[] {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+  
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Error loading cart from storage:', error);
+  }
+  
+  return [];
+}
+
+/**
+ * Save cart to localStorage
+ */
+function saveCartToStorage(items: CartItem[]): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  } catch (error) {
+    console.error('Error saving cart to storage:', error);
+  }
+}
+
 /**
  * useCart hook
  * Manages cart state with add, remove, update quantity, and clear operations
+ * Persists cart state to localStorage
  */
 export function useCart(): UseCartReturn {
-  const [items, setItems] = useState<CartItem[]>([]);
+  // Initialize from localStorage using lazy initialization (client-side only)
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    return loadCartFromStorage();
+  });
+  
+  // Save to localStorage whenever items change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      saveCartToStorage(items);
+    }
+  }, [items]);
 
   const addItem = useCallback((item: Omit<CartItem, 'quantity'>) => {
     setItems((prevItems) => {
@@ -73,6 +125,10 @@ export function useCart(): UseCartReturn {
 
   const clearCart = useCallback(() => {
     setItems([]);
+    // Clear localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(CART_STORAGE_KEY);
+    }
   }, []);
 
   const total = items.reduce(
