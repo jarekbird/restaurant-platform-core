@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode } from 'react';
-import { CartItem } from './useCart';
+import { useCart, CartItem } from './useCart';
 
 /**
  * CartContextValue interface
@@ -38,12 +38,11 @@ const CartContext = createContext<CartContextValue | null>(null);
  * ```
  */
 export function CartProvider({ children }: { children: ReactNode }) {
-  // Placeholder implementation - will be wired to useCart in next task
-  // For now, return null to maintain type safety
-  const cartValue: CartContextValue | null = null;
+  // Wire CartProvider to useCart hook
+  const cart = useCart();
 
   return (
-    <CartContext.Provider value={cartValue}>{children}</CartContext.Provider>
+    <CartContext.Provider value={cart}>{children}</CartContext.Provider>
   );
 }
 
