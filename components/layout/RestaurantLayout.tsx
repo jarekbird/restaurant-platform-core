@@ -20,7 +20,7 @@ interface RestaurantLayoutProps {
  */
 export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
   // Access cart context for cart functionality
-  const { itemCount, items } = useCartContext();
+  const { itemCount, items, removeItem, updateQuantity } = useCartContext();
   
   // Manage cart drawer open/close state
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -31,6 +31,15 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
   
   const handleCartClose = () => {
     setIsCartOpen(false);
+  };
+  
+  // Handlers for cart operations
+  const handleRemoveItem = (itemId: string) => {
+    removeItem(itemId);
+  };
+  
+  const handleUpdateQuantity = (itemId: string, quantity: number) => {
+    updateQuantity(itemId, quantity);
   };
   
   const formatHours = (hours: RestaurantConfig['hours']) => {
@@ -130,8 +139,8 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
       isOpen={isCartOpen}
       onClose={handleCartClose}
       items={items}
-      onRemoveItem={undefined}
-      onUpdateQuantity={undefined}
+      onRemoveItem={handleRemoveItem}
+      onUpdateQuantity={handleUpdateQuantity}
     />
     </RestaurantThemeProvider>
   );
