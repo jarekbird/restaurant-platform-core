@@ -1,17 +1,46 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
+import { CartProvider } from '@/components/order/CartProvider';
+import { menuSchema } from '@/lib/schemas/menu';
 
 describe('ChatAssistant', () => {
+  const mockMenu = menuSchema.parse({
+    id: 'menu-1',
+    name: 'Test Menu',
+    currency: 'USD',
+    categories: [
+      {
+        id: 'cat-1',
+        name: 'Appetizers',
+        items: [
+          {
+            id: 'item-1',
+            name: 'California Roll',
+            price: 8.99,
+          },
+        ],
+      },
+    ],
+  });
+
   it('should render toggle button when closed', () => {
-    render(<ChatAssistant />);
+    render(
+      <CartProvider>
+        <ChatAssistant menu={mockMenu} cart={[]} />
+      </CartProvider>
+    );
     
     const toggleButton = screen.getByRole('button', { name: /open chat/i });
     expect(toggleButton).toBeInTheDocument();
   });
 
   it('should open chat panel when toggle button is clicked', () => {
-    render(<ChatAssistant />);
+    render(
+      <CartProvider>
+        <ChatAssistant menu={mockMenu} cart={[]} />
+      </CartProvider>
+    );
     
     const toggleButton = screen.getByRole('button', { name: /open chat/i });
     fireEvent.click(toggleButton);
@@ -20,7 +49,11 @@ describe('ChatAssistant', () => {
   });
 
   it('should close chat panel when close button is clicked', () => {
-    render(<ChatAssistant />);
+    render(
+      <CartProvider>
+        <ChatAssistant menu={mockMenu} cart={[]} />
+      </CartProvider>
+    );
     
     const toggleButton = screen.getByRole('button', { name: /open chat/i });
     fireEvent.click(toggleButton);
@@ -42,7 +75,11 @@ describe('ChatAssistant', () => {
   });
 
   it('should have proper ARIA attributes', () => {
-    render(<ChatAssistant />);
+    render(
+      <CartProvider>
+        <ChatAssistant menu={mockMenu} cart={[]} />
+      </CartProvider>
+    );
     
     const toggleButton = screen.getByRole('button', { name: /open chat/i });
     expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
