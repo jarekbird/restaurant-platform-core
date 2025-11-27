@@ -1,7 +1,10 @@
+'use client';
+
 import { ReactNode } from 'react';
 import Image from 'next/image';
 import { RestaurantConfig } from '@/lib/schemas/restaurant';
 import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
+import { useCartContext } from '@/components/order/CartProvider';
 
 interface RestaurantLayoutProps {
   config: RestaurantConfig;
@@ -14,6 +17,10 @@ interface RestaurantLayoutProps {
  * Accepts restaurantConfig to display restaurant-specific information
  */
 export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
+  // Access cart context - will be used in next tasks for cart UI
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _cart = useCartContext();
+  
   const formatHours = (hours: RestaurantConfig['hours']) => {
     const dayNames: Record<string, string> = {
       mon: 'Monday',
