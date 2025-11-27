@@ -139,7 +139,32 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
 }
 ```
 
-2.1.4 Connect Checkout Form to Cart
+2.1.4 Add Remove from Cart Functionality
+
+Update `components/order/CartDrawer.tsx`:
+
+- Import `removeItem` and `updateQuantity` from cart context
+- Add remove button (trash icon or "Remove" button) for each cart item
+- Add quantity controls (+/- buttons) for each item
+- When quantity reaches 0, automatically remove the item
+- Show visual feedback when items are removed
+
+```typescript
+const handleRemoveItem = (itemId: string) => {
+  removeItem(itemId);
+  // Show toast notification: "Item removed from cart"
+};
+
+const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
+  if (newQuantity <= 0) {
+    handleRemoveItem(itemId);
+  } else {
+    updateQuantity(itemId, newQuantity);
+  }
+};
+```
+
+2.1.5 Connect Checkout Form to Cart
 
 Update `components/order/CartDrawer.tsx`:
 
@@ -173,7 +198,7 @@ const handleCheckout = (formData: CheckoutFormData) => {
 };
 ```
 
-2.1.5 Add Order Confirmation Modal
+2.1.6 Add Order Confirmation Modal
 
 Create `components/order/OrderConfirmationModal.tsx`:
 
@@ -186,9 +211,9 @@ This provides a polished completion experience for the demo.
 
 ---
 
-PHASE 2.2 — Add Chatbot-Assisted Ordering Demo
+PHASE 2.2 — Add AI-Powered Chatbot-Assisted Ordering
 
-Goal: Show a chatbot that can ask for menu items, confirm selections, add items to cart, suggest sides or popular dishes, and complete a mock order.
+Goal: Show a chatbot powered by real AI that can understand natural language, ask for menu items, confirm selections, add/remove items to/from cart, suggest sides or popular dishes, and complete a mock order.
 
 Why This Matters
 
@@ -201,9 +226,11 @@ Restaurant owners hate phone orders because of:
 
 A chatbot ordering assistant demonstrates: "This could replace 50% of your phone orders."
 
-For the demo, you do NOT need real AI inference running in the client yet. You only need:
-- A chatbot UI
-- Some scripted responses
+This phase implements real AI integration using an LLM API (OpenAI, Anthropic, or similar) to provide:
+- Natural language understanding
+- Contextual menu item matching
+- Intelligent conversation flow
+- Add/remove items from cart via chat
 - Hooks into the existing cart system
 
 Tasks
@@ -240,73 +267,109 @@ Create `components/chat/ChatInput.tsx`:
 - Enter key to submit
 - Disabled state while processing
 
-2.2.3 Create Simplified Chat Logic (Finite State Machine)
+2.2.3 Set Up AI/LLM Integration
 
-Create `components/chat/conversationLogic.ts`:
+Create `lib/ai/chatService.ts`:
 
-This acts as a tiny AI emulator that:
-- Receives user input
-- Returns response + next action
-- Handles:
-  - Keywords ("roll", "soup", "spicy tuna")
-  - Category requests ("show me appetizers")
-  - Quantity ("two California Rolls")
-  - Checkout ("yes, let's checkout")
+- Set up API client for LLM provider (OpenAI, Anthropic, etc.)
+- Create function to send messages to LLM with context
+- Include system prompt that defines the chatbot's role and capabilities
+- Handle API errors and rate limiting
 
-State machine states:
-- `greeting` — Initial welcome message
-- `browsing` — User is exploring menu
-- `ordering` — User is selecting items
-- `confirming` — Confirming item details
-- `checkout` — Ready to checkout
-- `completed` — Order placed
+System prompt should include:
+- Role: Restaurant ordering assistant
+- Capabilities: Add/remove items, answer questions, suggest items, checkout
+- Menu context: Full menu structure with items, categories, prices, descriptions
+- Cart context: Current cart state (items, quantities, total)
+- Instructions: Be helpful, confirm actions, suggest popular items
 
-Create `components/chat/demoConversationStates.ts`:
-
-Contains static prompts/responses for pitch mode. This can evolve into actual LLM prompts in Phase 3.
-
-Example structure:
 ```typescript
-export const conversationStates = {
-  greeting: {
-    message: "Hi! I'm here to help you order. What would you like today?",
-    suggestions: ["What can I get?", "Show me the menu", "What's popular?"],
-  },
-  // ... more states
-};
+export async function sendChatMessage(
+  messages: ChatMessage[],
+  menu: Menu,
+  cart: CartItem[]
+): Promise<string> {
+  const systemPrompt = buildSystemPrompt(menu, cart);
+  
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini', // or preferred model
+    messages: [
+      { role: 'system', content: systemPrompt },
+      ...messages,
+    ],
+    temperature: 0.7,
+  });
+  
+  return response.choices[0].message.content;
+}
 ```
 
-2.2.4 Implement Menu Keyword Matching
+2.2.4 Implement Action Extraction from AI Responses
 
-In `conversationLogic.ts`, implement:
+Create `lib/ai/actionParser.ts`:
 
-- Menu item name matching (fuzzy or exact)
-- Category matching
-- Price queries
-- Description keyword matching
+The AI responses should include structured actions that can be extracted:
+- `ADD_ITEM` — Add item to cart
+- `REMOVE_ITEM` — Remove item from cart
+- `UPDATE_QUANTITY` — Update item quantity
+- `SHOW_CART` — Display current cart
+- `CHECKOUT` — Initiate checkout
+- `SUGGEST_ITEMS` — Suggest menu items
+- `ANSWER_QUESTION` — Answer menu-related questions
 
-The logic should:
-- Read menu from context (passed from preview page)
-- Match user input to menu items
-- Return matched items with confidence
-- Ask for clarification if ambiguous
+Use function calling or structured output from the LLM to extract actions:
 
-2.2.5 Implement Chat → Cart Integration
+```typescript
+interface ChatAction {
+  type: 'ADD_ITEM' | 'REMOVE_ITEM' | 'UPDATE_QUANTITY' | 'SHOW_CART' | 'CHECKOUT' | 'SUGGEST_ITEMS' | 'ANSWER_QUESTION';
+  itemId?: string;
+  quantity?: number;
+  message: string;
+}
 
-When user says "I want a California Roll":
+export function parseChatAction(aiResponse: string, menu: Menu): ChatAction {
+  // Parse AI response to extract structured action
+  // Can use function calling, JSON mode, or regex parsing
+}
+```
 
-- Chat logic identifies the menu item
-- Calls `addToCart(menuItem)` from cart context
-- Confirms addition to cart
-- Shows cart summary
-- Asks if they want anything else
+Alternatively, use LLM function calling to get structured actions directly.
+
+2.2.5 Implement Chat → Cart Integration (Add Items)
+
+When user says "I want a California Roll" or "Add a miso soup":
+
+- AI identifies the menu item from natural language
+- Extract action: `ADD_ITEM` with itemId
+- Call `addItem()` from cart context
+- AI confirms addition to cart in response
+- Show cart summary in chat
+- Ask if they want anything else
 
 Integration points:
 - Import `useCartContext` in chat components
-- When chatbot reaches "order item" state, call `addItem()`
+- When AI response contains `ADD_ITEM` action, call `addItem()`
 - Update chat UI to show cart updates
+- Show toast notification: "Item added to cart"
 
-2.2.6 Implement Chat → Checkout
+2.2.6 Implement Chat → Cart Integration (Remove Items)
+
+When user says "Remove the California Roll" or "Take out the soup":
+
+- AI identifies which item to remove from cart
+- Extract action: `REMOVE_ITEM` with itemId
+- Call `removeItem()` from cart context
+- AI confirms removal in response
+- Show updated cart summary
+- Ask if they want to add something else
+
+Integration points:
+- When AI response contains `REMOVE_ITEM` action, call `removeItem()`
+- Handle cases where item is not in cart (AI should clarify)
+- Show toast notification: "Item removed from cart"
+- Update chat UI to reflect cart changes
+
+2.2.7 Implement Chat → Checkout
 
 When user says "Yes, let's checkout" or "Checkout":
 
@@ -320,7 +383,7 @@ This can either:
 - Show checkout form inline in chat, OR
 - Show a modal with checkout form
 
-2.2.7 Add Example Conversation Starter Buttons
+2.2.8 Add Example Conversation Starter Buttons
 
 Display example prompts at the top of the chat panel:
 
@@ -331,7 +394,7 @@ Display example prompts at the top of the chat panel:
 
 These help restaurant owners try the chatbot during demos.
 
-2.2.8 Integrate ChatAssistant into Preview Route
+2.2.9 Integrate ChatAssistant into Preview Route
 
 Update `app/preview/[slug]/page.tsx`:
 
@@ -340,8 +403,9 @@ Update `app/preview/[slug]/page.tsx`:
 - Include `<ChatAssistant />` in the layout
 
 The chat should have access to:
-- Menu data (for keyword matching)
-- Cart context (for adding items)
+- Menu data (for AI context and item matching)
+- Cart context (for adding/removing items and showing cart state)
+- API keys/environment variables for LLM service
 
 ---
 
@@ -370,10 +434,12 @@ For demo purposes, consider:
 2.3.3 Error Handling
 
 Add error handling for:
-- Invalid menu item requests in chat
+- LLM API failures (network errors, rate limits, API errors)
+- Invalid menu item requests in chat (AI should handle gracefully)
 - Cart operations failures
 - Checkout form validation
-- Network errors (if applicable)
+- Timeout handling for slow AI responses
+- Fallback responses when AI is unavailable
 
 2.3.4 Mobile Responsiveness
 
@@ -403,25 +469,32 @@ Tasks
 
 Write tests for:
 - `CartProvider` and `useCart` hook
-- Chat conversation logic
-- Menu keyword matching
+- AI chat service (mock LLM responses)
+- Action parser for extracting chat actions
 - Cart calculations
+- Add/remove item operations
 
 2.4.2 Integration Tests
 
 Test:
-- Full cart flow (add → view → checkout)
-- Chat → cart integration
+- Full cart flow (add → remove → update quantity → checkout)
+- Chat → add item to cart
+- Chat → remove item from cart
 - Chat → checkout flow
+- AI response handling and action extraction
 - Multiple restaurant previews
+- Error handling for AI API failures
 
 2.4.3 Update Documentation
 
 Update `docs/architecture.md` to include:
-- Cart system architecture
-- Chat system architecture
-- Integration points
+- Cart system architecture (add/remove/update operations)
+- AI chat system architecture
+- LLM integration approach
+- Action extraction and parsing
+- Integration points between chat and cart
 - State management approach
+- API key management and security
 
 2.4.4 Demo Playbook Update
 
@@ -439,15 +512,19 @@ After completing Phase 2, you will have:
 
 ✅ Full cart functionality in preview mode
 - Users can add items to cart
-- Cart drawer with item management
+- Users can remove items from cart
+- Cart drawer with item management (add/remove/update quantity)
 - Checkout form integration
 - Order confirmation flow
 
-✅ Chatbot-assisted ordering demo
-- Interactive chat interface
+✅ AI-powered chatbot-assisted ordering
+- Interactive chat interface with real AI
+- Natural language understanding
 - Menu item discovery via chat
-- Chat-to-cart integration
+- Add/remove items from cart via chat
+- Chat-to-cart integration (add and remove)
 - Chat-to-checkout flow
+- Intelligent suggestions and recommendations
 - Example conversation starters
 
 ✅ Polished demo experience
@@ -483,12 +560,13 @@ At this point, you can confidently pitch to restaurants:
 This is already more than competitors like BentoBox or Popmenu offer.
 
 Future phases could include:
-- Real LLM integration for chatbot (Phase 3)
+- Enhanced AI capabilities (multi-language support, dietary restrictions)
 - Payment processing integration
 - Order management system
 - Multi-restaurant admin dashboard
 - Real-time order tracking
 - SMS/email notifications
+- Voice ordering integration
 
 ---
 
@@ -499,10 +577,17 @@ This phase is designed to be AI-agent friendly:
 1. Clear component boundaries
 2. Well-defined interfaces
 3. Existing hooks and utilities to build upon
-4. No external API dependencies (for demo)
-5. Scripted responses (no real AI needed yet)
+4. Real AI integration with structured action extraction
+5. Well-defined system prompts for consistent behavior
 
 Each task can be implemented independently, making it suitable for parallel development or sequential agent work.
 
-The chat system is intentionally simplified for Phase 2, with a clear path to upgrade to real LLM integration in Phase 3.
+Key considerations:
+- API key management: Use environment variables, never commit keys
+- Rate limiting: Implement proper rate limiting for LLM API calls
+- Error handling: Graceful degradation when AI is unavailable
+- Cost management: Use appropriate models (e.g., gpt-4o-mini) for cost efficiency
+- Action extraction: Use function calling or structured output for reliable action parsing
+- Context management: Keep conversation history manageable (limit message history)
+- Security: Validate all actions before executing (e.g., verify itemId exists in menu)
 
