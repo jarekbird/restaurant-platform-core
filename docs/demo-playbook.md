@@ -38,6 +38,116 @@ This document provides a clear guide for demonstrating the restaurant-platform-c
    - Coffee and pastries menu
    - Different restaurant information
 
+## Cart Flow Demo
+
+### Adding Items to Cart
+
+1. Navigate to any preview page (e.g., `http://localhost:3000/preview/so-delicious`)
+2. Scroll to the menu section
+3. Click "Add to Cart" on any menu item
+4. Observe:
+   - Toast notification: "Item added to cart"
+   - Order button in header shows item count badge
+5. Add multiple items to see count increase
+
+### Viewing and Managing Cart
+
+1. Click the "Order Now" button in the header
+2. Cart drawer slides in from the right (desktop) or bottom (mobile)
+3. In the cart drawer:
+   - See all items with quantities and prices
+   - Use +/- buttons to adjust quantities
+   - Click "Remove" to remove items
+   - See total price at bottom
+4. Click "Checkout" button to proceed
+
+### Checkout Process
+
+1. Fill in checkout form:
+   - Name (required)
+   - Phone (required)
+   - Notes (optional)
+2. Click "Submit Order"
+3. Observe:
+   - Success toast: "Order placed successfully!"
+   - Order confirmation modal appears
+   - Cart is cleared
+   - Cart drawer closes
+
+### Key Talking Points
+
+- **Cart Persistence**: Cart state persists in localStorage (survives page reload)
+- **Mobile Responsive**: Cart drawer adapts to mobile (bottom sheet) and desktop (right sidebar)
+- **Accessibility**: Full keyboard navigation, ARIA labels, focus management
+- **Toast Notifications**: Visual feedback for all cart operations
+
+## AI Chatbot Ordering Flow Demo
+
+### Starting a Chat Session
+
+1. Navigate to a preview page with `orderOnlineEnabled: true`
+2. Look for the chat assistant button (usually bottom-right)
+3. Click to open the chat panel
+
+### Conversation Starter Buttons
+
+When chat opens with empty history, you'll see buttons:
+- "What can I get?"
+- "Order a [menu item]"
+- "Add two [menu item]"
+- "Checkout"
+
+Click any button to send that message automatically.
+
+### Adding Items via Chat
+
+1. Type or click: "Add miso soup" or "I'd like two California rolls"
+2. AI processes the request and:
+   - Adds item(s) to cart
+   - Shows confirmation message in chat
+   - Displays cart summary with total
+   - Shows toast notification
+
+### Removing Items via Chat
+
+1. Type: "Remove the miso soup" or "Take out the California roll"
+2. AI:
+   - Removes item from cart
+   - Confirms removal
+   - Updates cart summary
+   - Shows toast notification
+
+### Checking Cart via Chat
+
+1. Type: "What's in my cart?" or "Show my cart"
+2. AI responds with:
+   - List of items with quantities
+   - Individual prices
+   - Total price
+
+### Checkout via Chat
+
+1. Type: "Checkout" or "I'm ready to order"
+2. AI:
+   - Opens checkout form
+   - Confirms in chat message
+3. Complete checkout form as normal
+
+### Error Handling Demo
+
+1. Try: "Add something that doesn't exist"
+2. AI responds with helpful error message
+3. Try: "Remove item not in cart"
+4. AI explains item is not in cart
+
+### Key Talking Points
+
+- **Natural Language**: Users can order in conversational language
+- **Context Aware**: AI knows menu items and current cart state
+- **Action Extraction**: AI responses parsed into structured actions
+- **Error Handling**: Graceful handling of invalid requests
+- **Integration**: Chat actions update cart in real-time
+
 ## Ingesting Menus
 
 ### Prepare Input File

@@ -46,6 +46,127 @@ data/restaurants/<slug>/
    - Replaces placeholders in configuration files
    - Creates a standalone Next.js application
 
+## Cart System Architecture
+
+The cart system provides shopping cart functionality for online ordering. It consists of:
+
+### Core Components
+
+1. **`useCart` Hook** (`components/order/useCart.ts`):
+   - Manages cart state using React hooks
+   - Provides operations: `addItem`, `removeItem`, `updateQuantity`, `clearCart`
+   - Calculates `total` and `itemCount` automatically
+   - Persists cart state to `localStorage` for persistence across page reloads
+   - Handles hydration to avoid server/client mismatches
+
+2. **`CartProvider`** (`components/order/CartProvider.tsx`):
+   - React Context provider that wraps the `useCart` hook
+   - Makes cart state available to all child components via `useCartContext()`
+   - Integrates with toast notifications for user feedback
+   - Wraps cart operations with toast notifications (add, remove, clear)
+
+3. **Cart UI Components**:
+   - **`CartDrawer`**: Slide-out drawer showing cart items, quantities, and checkout
+   - **`OrderButton`**: Button in header showing item count badge
+   - **`CheckoutForm`**: Form for customer information (name, phone, notes)
+   - **`OrderConfirmationModal`**: Modal shown after successful order placement
+
+### State Management
+
+- Cart state is managed at the provider level using React Context
+- State is persisted to `localStorage` with key `restaurant-cart`
+- Cart operations are wrapped to provide toast notifications
+- Cart state is shared across all components within `CartProvider`
+
+### Integration Points
+
+- **Preview Route**: `CartProvider` wraps the preview page layout
+- **RestaurantLayout**: Manages cart drawer open/close state and order placement
+- **MenuItemCard**: "Add to Cart" button calls `addItem` from context
+- **ChatAssistant**: Can add/remove items via AI commands
+
+## AI Chat System Architecture
+
+The AI chat system provides conversational ordering assistance powered by OpenAI's GPT models.
+
+### Core Components
+
+1. **`ChatAssistant`** (`components/chat/ChatAssistant.tsx`):
+   - Main chat UI component with collapsible panel
+   - Manages chat message history
+   - Handles user input and sends to `/api/chat` endpoint
+   - Parses AI responses to extract cart actions
+   - Executes cart actions (add, remove, update quantity, checkout)
+   - Shows conversation starter buttons for common actions
+
+2. **`ChatMessage`** (`components/chat/ChatMessage.tsx`):
+   - Displays individual chat messages (user/assistant)
+   - Shows timestamps and message content
+
+3. **`ChatInput`** (`components/chat/ChatInput.tsx`):
+   - Input field for user messages
+   - Submit button to send messages
+
+### AI Service Layer
+
+1. **`buildSystemPrompt`** (`lib/ai/chatService.ts`):
+   - Generates system prompt for LLM based on:
+     - Restaurant menu structure
+     - Current cart contents
+     - Available actions (ADD_ITEM, REMOVE_ITEM, UPDATE_QUANTITY, SHOW_CART, CHECKOUT)
+   - Provides context about menu items, prices, and cart state
+
+2. **`sendChatMessage`** (`lib/ai/chatService.ts`):
+   - Makes API call to OpenAI GPT-4o-mini model
+   - Sends system prompt + message history
+   - Returns AI response as string
+   - Handles errors (API key issues, rate limits, network errors)
+
+3. **`actionParser`** (`lib/ai/actionParser.ts`):
+   - Parses AI JSON responses into structured `ChatAction` objects
+   - Validates action types and parameters
+   - Handles malformed responses gracefully
+   - Returns action objects: `{ type, itemId?, quantity?, content? }`
+
+### API Route
+
+**`/api/chat`** (`app/api/chat/route.ts`):
+- Next.js API route handler
+- Receives POST requests with `{ messages, menu, cart }`
+- Calls `sendChatMessage` with context
+- Returns `{ message, action }` response
+- Handles errors and returns appropriate status codes
+
+### Action Extraction and Integration
+
+1. **Action Types**:
+   - `ADD_ITEM`: Add item to cart (requires `itemId`, optional `quantity`)
+   - `REMOVE_ITEM`: Remove item from cart (requires `itemId`)
+   - `UPDATE_QUANTITY`: Update item quantity (requires `itemId`, `quantity`)
+   - `SHOW_CART`: Display current cart contents
+   - `CHECKOUT`: Open checkout form
+
+2. **Integration Flow**:
+   - User sends message → `/api/chat` → OpenAI API → Response
+   - Response parsed by `actionParser` → `ChatAction` object
+   - `ChatAssistant` executes action via `useCartContext()`
+   - Cart state updates → UI updates (drawer, badge, toasts)
+   - Confirmation message added to chat history
+
+### State Management
+
+- Chat messages stored in component state (`useState`)
+- Cart state accessed via `useCartContext()` hook
+- Menu data passed as prop from server component
+- No global chat state (each chat instance is independent)
+
+### API Key Handling
+
+- OpenAI API key stored in `OPENAI_API_KEY` environment variable
+- Model selection via `OPENAI_MODEL` (defaults to `gpt-4o-mini`)
+- API key validation in `sendChatMessage`
+- Error handling for missing/invalid keys
+
 ## Theme System
 
 The theme system allows restaurants to have different visual styles:
