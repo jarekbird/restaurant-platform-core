@@ -78,9 +78,28 @@ export function parseChatAction(
   if (response.includes('add') || response.includes('added') || response.includes('adding')) {
     const item = findMenuItemInResponse(response, menu);
     if (item) {
-      // Extract quantity if mentioned
-      const quantityMatch = response.match(/(\d+)\s*(?:x|×)?\s*(?:of|times)?/);
-      const quantity = quantityMatch ? parseInt(quantityMatch[1], 10) : 1;
+      // Extract quantity if mentioned - look for number words (two, three) or digits
+      let quantity = 1;
+      const numberWords: Record<string, number> = {
+        'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+        'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+      };
+      
+      // Try number words first
+      for (const [word, num] of Object.entries(numberWords)) {
+        if (response.includes(word)) {
+          quantity = num;
+          break;
+        }
+      }
+      
+      // If no number word found, try digits
+      if (quantity === 1) {
+        const quantityMatch = response.match(/(\d+)\s*(?:x|×)?\s*(?:of|times)?/);
+        if (quantityMatch) {
+          quantity = parseInt(quantityMatch[1], 10);
+        }
+      }
 
       return {
         type: 'ADD_ITEM',
