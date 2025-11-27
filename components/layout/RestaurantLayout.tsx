@@ -50,9 +50,6 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
     // Log order for demo purposes
     console.log('Order placed:', order);
     
-    // Show success notification (will be replaced with modal in next task)
-    alert('Order placed successfully!');
-    
     // Clear cart after order
     clearCart();
   };

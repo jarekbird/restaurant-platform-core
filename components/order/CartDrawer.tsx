@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { CheckoutForm } from './CheckoutForm';
+import { OrderConfirmationModal } from './OrderConfirmationModal';
 
 interface CartItem {
   id: string;
@@ -54,16 +55,26 @@ export function CartDrawer({
     // Log order for demo purposes
     console.log('Order placed:', order);
     
-    // Call onPlaceOrder if provided, otherwise show alert
+    // Call onPlaceOrder if provided
     if (onPlaceOrder) {
       onPlaceOrder(order);
-    } else {
-      // Fallback to alert for now (will be replaced with modal in next task)
-      alert('Order placed successfully!');
     }
+    
+    // Show confirmation modal
+    setOrderData({
+      items,
+      total,
+      customerName: formData.name,
+    });
+    setShowConfirmation(true);
     
     // Close drawer and reset checkout view
     setShowCheckout(false);
+  };
+  
+  const handleCloseConfirmation = () => {
+    setShowConfirmation(false);
+    setOrderData(null);
     onClose();
   };
   
@@ -197,6 +208,13 @@ export function CartDrawer({
           )}
         </div>
       </div>
+      {orderData && (
+        <OrderConfirmationModal
+          isOpen={showConfirmation}
+          onClose={handleCloseConfirmation}
+          orderSummary={orderData}
+        />
+      )}
     </>
   );
 }
