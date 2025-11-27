@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -17,34 +17,22 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   );
 
-  const [isDevtoolsOpen, setIsDevtoolsOpen] = useState(false);
-
-  useEffect(() => {
-    // Handle toggle from header button
-    const toggleButton = document.getElementById('tanstack-devtools-toggle');
-    const handleClick = () => {
-      setIsDevtoolsOpen((prev) => !prev);
-    };
-
-    if (toggleButton) {
-      toggleButton.addEventListener('click', handleClick);
-      return () => {
-        toggleButton.removeEventListener('click', handleClick);
-      };
-    }
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       {children}
       <ReactQueryDevtools 
-        initialIsOpen={isDevtoolsOpen}
+        initialIsOpen={false}
         buttonPosition="bottom-right"
       />
       <style jsx global>{`
-        /* Hide the default devtools floating button */
+        /* Move TanStack Query Devtools button to top left */
         [data-react-query-devtools-button] {
-          display: none !important;
+          position: fixed !important;
+          top: 1rem !important;
+          left: 1rem !important;
+          bottom: auto !important;
+          right: auto !important;
+          z-index: 9999 !important;
         }
       `}</style>
     </QueryClientProvider>
