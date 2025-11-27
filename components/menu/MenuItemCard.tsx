@@ -2,6 +2,7 @@
 
 import { MenuItem } from '@/lib/schemas/menu';
 import { cn } from '@/lib/utils';
+import { useCartContext } from '@/components/order/CartProvider';
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -13,6 +14,17 @@ interface MenuItemCardProps {
  * Renders a single menu item with title, description, price, tags, and modifier placeholder
  */
 export function MenuItemCard({ item, className }: MenuItemCardProps) {
+  const { addItem } = useCartContext();
+  
+  const handleAddToCart = () => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      modifiers: [], // Default to no modifiers for now
+    });
+  };
+  
   return (
     <div
       className={cn(
@@ -54,6 +66,15 @@ export function MenuItemCard({ item, className }: MenuItemCardProps) {
             ${item.price.toFixed(2)}
           </span>
         </div>
+      </div>
+      <div className="mt-4">
+        <button
+          onClick={handleAddToCart}
+          className="w-full rounded-md bg-black px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+          aria-label={`Add ${item.name} to cart`}
+        >
+          Add to Cart
+        </button>
       </div>
       {item.image && (
         <div className="mt-4">
