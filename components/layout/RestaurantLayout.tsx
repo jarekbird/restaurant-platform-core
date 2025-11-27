@@ -20,7 +20,7 @@ interface RestaurantLayoutProps {
  */
 export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
   // Access cart context for cart functionality
-  const { itemCount, items, removeItem, updateQuantity } = useCartContext();
+  const { itemCount, items, removeItem, updateQuantity, clearCart } = useCartContext();
   
   // Manage cart drawer open/close state
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -40,6 +40,21 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
   
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     updateQuantity(itemId, quantity);
+  };
+  
+  const handlePlaceOrder = (order: {
+    items: typeof items;
+    total: number;
+    customer: { name: string; phone: string; notes?: string };
+  }) => {
+    // Log order for demo purposes
+    console.log('Order placed:', order);
+    
+    // Show success notification (will be replaced with modal in next task)
+    alert('Order placed successfully!');
+    
+    // Clear cart after order
+    clearCart();
   };
   
   const formatHours = (hours: RestaurantConfig['hours']) => {
@@ -141,6 +156,7 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
       items={items}
       onRemoveItem={handleRemoveItem}
       onUpdateQuantity={handleUpdateQuantity}
+      onPlaceOrder={handlePlaceOrder}
     />
     </RestaurantThemeProvider>
   );

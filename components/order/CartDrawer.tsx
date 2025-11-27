@@ -18,6 +18,15 @@ interface CartDrawerProps {
   className?: string;
   onRemoveItem?: (itemId: string) => void;
   onUpdateQuantity?: (itemId: string, quantity: number) => void;
+  onPlaceOrder?: (order: {
+    items: CartItem[];
+    total: number;
+    customer: {
+      name: string;
+      phone: string;
+      notes?: string;
+    };
+  }) => void;
 }
 
 /**
@@ -31,8 +40,32 @@ export function CartDrawer({
   className,
   onRemoveItem,
   onUpdateQuantity,
+  onPlaceOrder,
 }: CartDrawerProps) {
   const [showCheckout, setShowCheckout] = useState(false);
+  
+  const handleCheckout = (formData: { name: string; phone: string; notes?: string }) => {
+    const order = {
+      items,
+      total,
+      customer: formData,
+    };
+    
+    // Log order for demo purposes
+    console.log('Order placed:', order);
+    
+    // Call onPlaceOrder if provided, otherwise show alert
+    if (onPlaceOrder) {
+      onPlaceOrder(order);
+    } else {
+      // Fallback to alert for now (will be replaced with modal in next task)
+      alert('Order placed successfully!');
+    }
+    
+    // Close drawer and reset checkout view
+    setShowCheckout(false);
+    onClose();
+  };
   
   if (!isOpen) {
     return null;
@@ -75,10 +108,7 @@ export function CartDrawer({
           <div className="flex-1 overflow-y-auto p-4">
             {showCheckout ? (
               <CheckoutForm
-                onSubmit={(formData) => {
-                  // Will be handled in next task
-                  console.log('Checkout submitted:', formData);
-                }}
+                onSubmit={handleCheckout}
               />
             ) : items.length === 0 ? (
               <p className="text-center text-gray-500 dark:text-gray-400">
