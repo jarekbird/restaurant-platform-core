@@ -105,6 +105,28 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                   
                   if (itemByName) {
                     const quantity = action.quantity || 1;
+                    
+                    // Calculate total before adding (since state updates are async)
+                    const currentTotal = cartContext.items.reduce(
+                      (sum, item) => sum + item.price * item.quantity,
+                      0
+                    );
+                    
+                    // Check if item already exists in cart to calculate correct new total
+                    const existingItem = cartContext.items.find(item => item.id === itemByName.id);
+                    let newTotal: number;
+                    
+                    if (existingItem) {
+                      // Item exists, will increment quantity
+                      const newQuantity = existingItem.quantity + quantity;
+                      const itemTotal = itemByName.price * newQuantity;
+                      // Remove old item total and add new item total
+                      newTotal = currentTotal - (existingItem.price * existingItem.quantity) + itemTotal;
+                    } else {
+                      // New item, just add the price * quantity
+                      newTotal = currentTotal + (itemByName.price * quantity);
+                    }
+                    
                     for (let i = 0; i < quantity; i++) {
                       cartContext.addItem({
                         id: itemByName.id,
@@ -114,12 +136,7 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                     }
                     confirmationMessage = `✓ Added ${quantity} ${itemByName.name}${quantity > 1 ? 's' : ''} to your cart.`;
                     actionSucceeded = true;
-                    
-                    const newCartTotal = cartContext.items.reduce(
-                      (sum, item) => sum + item.price * item.quantity,
-                      0
-                    );
-                    confirmationMessage += ` Your cart total is now $${newCartTotal.toFixed(2)}.`;
+                    confirmationMessage += ` Your cart total is now $${newTotal.toFixed(2)}.`;
                     break;
                   }
                   
@@ -133,6 +150,27 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                   break;
                 }
                 
+                // Calculate total before adding (since state updates are async)
+                const currentTotal = cartContext.items.reduce(
+                  (sum, item) => sum + item.price * item.quantity,
+                  0
+                );
+                
+                // Check if item already exists in cart to calculate correct new total
+                const existingItem = cartContext.items.find(item => item.id === menuItem.id);
+                let newTotal: number;
+                
+                if (existingItem) {
+                  // Item exists, will increment quantity
+                  const newQuantity = existingItem.quantity + quantity;
+                  const itemTotal = menuItem.price * newQuantity;
+                  // Remove old item total and add new item total
+                  newTotal = currentTotal - (existingItem.price * existingItem.quantity) + itemTotal;
+                } else {
+                  // New item, just add the price * quantity
+                  newTotal = currentTotal + (menuItem.price * quantity);
+                }
+                
                 for (let i = 0; i < quantity; i++) {
                   cartContext.addItem({
                     id: menuItem.id,
@@ -142,13 +180,7 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                 }
                 confirmationMessage = `✓ Added ${quantity} ${menuItem.name}${quantity > 1 ? 's' : ''} to your cart.`;
                 actionSucceeded = true;
-                
-                // Add cart summary
-                const newCartTotal = cartContext.items.reduce(
-                  (sum, item) => sum + item.price * item.quantity,
-                  0
-                );
-                confirmationMessage += ` Your cart total is now $${newCartTotal.toFixed(2)}.`;
+                confirmationMessage += ` Your cart total is now $${newTotal.toFixed(2)}.`;
               } else {
                 confirmationMessage = `I'm not sure which item you'd like to add. Could you be more specific?`;
               }
