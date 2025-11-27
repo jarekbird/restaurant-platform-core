@@ -52,7 +52,7 @@ export function ChatInput({ onSend, disabled = false, className }: ChatInputProp
       <button
         type="submit"
         disabled={disabled || !message.trim()}
-        className="rounded-md bg-black px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-200"
+        className="touch-manipulation rounded-md bg-black px-4 py-3 text-base font-semibold text-white transition-colors active:bg-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:active:bg-gray-300 dark:hover:bg-gray-200"
         aria-label="Send message"
       >
         Send

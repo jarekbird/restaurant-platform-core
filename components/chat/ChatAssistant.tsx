@@ -265,10 +265,10 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
       {isOpen && (
         <div
           className={cn(
+            // Mobile: bottom sheet
+            'fixed bottom-0 left-0 right-0 z-50 h-[85vh] max-h-[85vh] w-full rounded-t-lg bg-white shadow-xl dark:bg-gray-900',
             // Desktop: right sidebar
-            'fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-xl dark:bg-gray-900',
-            // Mobile: bottom drawer (will be adjusted with media queries if needed)
-            'md:max-w-md',
+            'md:bottom-auto md:left-auto md:right-0 md:top-0 md:h-full md:max-h-full md:max-w-md md:rounded-t-none',
             className
           )}
           role="dialog"
@@ -289,7 +289,7 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
             </div>
 
             {/* Chat Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 overscroll-contain">
               {messages.length === 0 ? (
                 <div className="space-y-4">
                   <p className="text-center text-gray-500 dark:text-gray-400">

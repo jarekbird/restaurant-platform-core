@@ -106,7 +106,10 @@ export function CartDrawer({
       {/* Drawer */}
       <div
         className={cn(
-          'fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-xl dark:bg-gray-900',
+          // Mobile: full width bottom sheet
+          'fixed bottom-0 left-0 right-0 z-50 h-[85vh] max-h-[85vh] w-full rounded-t-lg bg-white shadow-xl dark:bg-gray-900',
+          // Desktop: right sidebar
+          'md:bottom-auto md:left-auto md:right-0 md:top-0 md:h-full md:max-h-full md:max-w-md md:rounded-t-none',
           className
         )}
         role="dialog"
@@ -127,7 +130,7 @@ export function CartDrawer({
           </div>
 
           {/* Items List or Checkout Form */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 overscroll-contain">
             {showCheckout ? (
               <CheckoutForm
                 onSubmit={handleCheckout}
@@ -155,7 +158,7 @@ export function CartDrawer({
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                            className="h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            className="h-10 w-10 min-w-[2.5rem] touch-manipulation rounded border border-gray-300 bg-white text-gray-700 active:bg-gray-100 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:active:bg-gray-700 dark:hover:bg-gray-700"
                             aria-label={`Decrease ${item.name} quantity`}
                           >
                             −
@@ -165,7 +168,7 @@ export function CartDrawer({
                           </span>
                           <button
                             onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                            className="h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            className="h-10 w-10 min-w-[2.5rem] touch-manipulation rounded border border-gray-300 bg-white text-gray-700 active:bg-gray-100 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:active:bg-gray-700 dark:hover:bg-gray-700"
                             aria-label={`Increase ${item.name} quantity`}
                           >
                             +
@@ -176,7 +179,7 @@ export function CartDrawer({
                       {onRemoveItem && (
                         <button
                           onClick={() => onRemoveItem(item.id)}
-                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                          className="h-10 w-10 min-w-[2.5rem] touch-manipulation text-red-500 active:bg-red-50 hover:bg-red-50 dark:text-red-400 dark:active:bg-red-900/20 dark:hover:bg-red-900/20"
                           aria-label={`Remove ${item.name} from cart`}
                         >
                           🗑️
@@ -201,7 +204,7 @@ export function CartDrawer({
               </div>
               <button
                 onClick={() => setShowCheckout(true)}
-                className="w-full rounded-md bg-black px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                className="w-full touch-manipulation rounded-md bg-black px-4 py-3 text-base font-semibold text-white transition-colors active:bg-gray-700 hover:bg-gray-800 dark:bg-white dark:text-black dark:active:bg-gray-300 dark:hover:bg-gray-200"
               >
                 Checkout
               </button>
