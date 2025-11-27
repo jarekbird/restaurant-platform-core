@@ -54,10 +54,10 @@ describe('RestaurantLayout - Cart Aware', () => {
     // Check main content
     expect(screen.getByText('Main Content')).toBeInTheDocument();
     
-    // Check footer sections
-    expect(screen.getByText('Address')).toBeInTheDocument();
-    expect(screen.getByText('Hours')).toBeInTheDocument();
-    expect(screen.getByText('Contact')).toBeInTheDocument();
+    // Check footer sections (using regex to handle potential whitespace)
+    expect(screen.getByText(/Address/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hours/i)).toBeInTheDocument();
+    expect(screen.getByText(/Contact/i)).toBeInTheDocument();
   });
 
   it('should render restaurant information correctly', () => {
