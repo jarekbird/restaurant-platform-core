@@ -6,6 +6,7 @@ import { RestaurantConfig } from '@/lib/schemas/restaurant';
 import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 import { useCartContext } from '@/components/order/CartProvider';
 import { OrderButton } from '@/components/order/OrderButton';
+import { CartDrawer } from '@/components/order/CartDrawer';
 
 interface RestaurantLayoutProps {
   config: RestaurantConfig;
@@ -19,7 +20,7 @@ interface RestaurantLayoutProps {
  */
 export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
   // Access cart context for cart functionality
-  const { itemCount } = useCartContext();
+  const { itemCount, items } = useCartContext();
   
   // Manage cart drawer open/close state
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -28,9 +29,7 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
     setIsCartOpen(!isCartOpen);
   };
   
-  // Will be used in next task when CartDrawer is integrated
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _handleCartClose = () => {
+  const handleCartClose = () => {
     setIsCartOpen(false);
   };
   
@@ -127,6 +126,11 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
         </div>
       </footer>
     </div>
+    <CartDrawer
+      isOpen={isCartOpen}
+      onClose={handleCartClose}
+      items={items}
+    />
     </RestaurantThemeProvider>
   );
 }
