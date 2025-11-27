@@ -27,10 +27,7 @@ export function CartDrawer({
   onClose,
   items,
   className,
-  // Will be used in next task when UI controls are added
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRemoveItem,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onUpdateQuantity,
 }: CartDrawerProps) {
   if (!isOpen) {
@@ -83,15 +80,49 @@ export function CartDrawer({
                     key={item.id}
                     className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-800"
                   >
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold">{item.name}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         ${item.price.toFixed(2)} × {item.quantity}
                       </p>
                     </div>
-                    <p className="font-semibold">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </p>
+                    <div className="ml-4 flex items-center gap-4">
+                      {/* Quantity Controls */}
+                      {onUpdateQuantity && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                            className="h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            aria-label={`Decrease ${item.name} quantity`}
+                          >
+                            −
+                          </button>
+                          <span className="w-8 text-center font-semibold">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                            className="h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            aria-label={`Increase ${item.name} quantity`}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                      {/* Remove Button */}
+                      {onRemoveItem && (
+                        <button
+                          onClick={() => onRemoveItem(item.id)}
+                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                          aria-label={`Remove ${item.name} from cart`}
+                        >
+                          🗑️
+                        </button>
+                      )}
+                      <p className="ml-2 font-semibold">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
                   </li>
                 ))}
               </ul>
