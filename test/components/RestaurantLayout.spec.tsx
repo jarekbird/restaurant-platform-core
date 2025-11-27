@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { RestaurantLayout } from '@/components/layout/RestaurantLayout';
+import { CartProvider } from '@/components/order/CartProvider';
 import { restaurantConfigSchema } from '@/lib/schemas/restaurant';
 
 describe('RestaurantLayout', () => {
@@ -34,9 +35,11 @@ describe('RestaurantLayout', () => {
 
   it('should render header with restaurant name', () => {
     render(
-      <RestaurantLayout config={mockConfig}>
-        <div>Test Content</div>
-      </RestaurantLayout>
+      <CartProvider>
+        <RestaurantLayout config={mockConfig}>
+          <div>Test Content</div>
+        </RestaurantLayout>
+      </CartProvider>
     );
     
     const header = screen.getByRole('banner');
@@ -51,9 +54,11 @@ describe('RestaurantLayout', () => {
     };
     
     render(
-      <RestaurantLayout config={configWithLogo}>
-        <div>Test Content</div>
-      </RestaurantLayout>
+      <CartProvider>
+        <RestaurantLayout config={configWithLogo}>
+          <div>Test Content</div>
+        </RestaurantLayout>
+      </CartProvider>
     );
     
     const logo = screen.getByAltText('Test Restaurant logo');
@@ -65,9 +70,11 @@ describe('RestaurantLayout', () => {
 
   it('should render main content area with children', () => {
     render(
-      <RestaurantLayout config={mockConfig}>
-        <div>Main Content</div>
-      </RestaurantLayout>
+      <CartProvider>
+        <RestaurantLayout config={mockConfig}>
+          <div>Main Content</div>
+        </RestaurantLayout>
+      </CartProvider>
     );
     
     expect(screen.getByText('Main Content')).toBeInTheDocument();
@@ -75,9 +82,11 @@ describe('RestaurantLayout', () => {
 
   it('should render footer with address, hours, and phone', () => {
     render(
-      <RestaurantLayout config={mockConfig}>
-        <div>Test Content</div>
-      </RestaurantLayout>
+      <CartProvider>
+        <RestaurantLayout config={mockConfig}>
+          <div>Test Content</div>
+        </RestaurantLayout>
+      </CartProvider>
     );
     
     const footer = screen.getByRole('contentinfo');
@@ -90,9 +99,11 @@ describe('RestaurantLayout', () => {
 
   it('should render navigation stub in header', () => {
     render(
-      <RestaurantLayout config={mockConfig}>
-        <div>Test Content</div>
-      </RestaurantLayout>
+      <CartProvider>
+        <RestaurantLayout config={mockConfig}>
+          <div>Test Content</div>
+        </RestaurantLayout>
+      </CartProvider>
     );
     
     const header = screen.getByRole('banner');
