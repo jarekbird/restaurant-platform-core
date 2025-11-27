@@ -14,6 +14,8 @@ interface CartDrawerProps {
   onClose: () => void;
   items: CartItem[];
   className?: string;
+  onRemoveItem?: (itemId: string) => void;
+  onUpdateQuantity?: (itemId: string, quantity: number) => void;
 }
 
 /**
@@ -25,6 +27,8 @@ export function CartDrawer({
   onClose,
   items,
   className,
+  onRemoveItem,
+  onUpdateQuantity,
 }: CartDrawerProps) {
   if (!isOpen) {
     return null;

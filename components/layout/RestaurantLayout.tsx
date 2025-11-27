@@ -130,6 +130,8 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
       isOpen={isCartOpen}
       onClose={handleCartClose}
       items={items}
+      onRemoveItem={undefined}
+      onUpdateQuantity={undefined}
     />
     </RestaurantThemeProvider>
   );
