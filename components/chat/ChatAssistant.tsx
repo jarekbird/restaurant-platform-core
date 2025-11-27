@@ -9,6 +9,7 @@ import { CartItem } from '@/components/order/useCart';
 import { ChatMessage as ChatMessageTypeLib } from '@/lib/ai/types';
 import { parseChatAction } from '@/lib/ai/actionParser';
 import { useCartContext } from '@/components/order/CartProvider';
+import { useOptionalToast } from '@/lib/hooks/useOptionalToast';
 
 interface ChatAssistantProps {
   menu: Menu;
@@ -26,6 +27,7 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const cartContext = useCartContext();
+  const toast = useOptionalToast();
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -82,15 +84,26 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
       if (action) {
         let confirmationMessage = '';
         
-        switch (action.type) {
-          case 'ADD_ITEM':
-            if (action.itemId) {
-              const menuItem = menu.categories
-                .flatMap((cat) => cat.items)
-                .find((item) => item.id === action.itemId);
-              
-              if (menuItem) {
+        try {
+          switch (action.type) {
+            case 'ADD_ITEM':
+              if (action.itemId) {
+                // Validate item exists in menu
+                const menuItem = menu.categories
+                  .flatMap((cat) => cat.items)
+                  .find((item) => item.id === action.itemId);
+                
+                if (!menuItem) {
+                  confirmationMessage = `Sorry, I couldn't find that item on the menu. Please try again.`;
+                  break;
+                }
+                
                 const quantity = action.quantity || 1;
+                if (quantity <= 0 || quantity > 100) {
+                  confirmationMessage = `Invalid quantity. Please specify a number between 1 and 100.`;
+                  break;
+                }
+                
                 for (let i = 0; i < quantity; i++) {
                   cartContext.addItem({
                     id: menuItem.id,
@@ -106,13 +119,19 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                   0
                 );
                 confirmationMessage += ` Your cart total is now $${newCartTotal.toFixed(2)}.`;
+              } else {
+                confirmationMessage = `I'm not sure which item you'd like to add. Could you be more specific?`;
               }
-            }
-            break;
-          case 'REMOVE_ITEM':
-            if (action.itemId) {
-              const itemToRemove = cart.find((item) => item.id === action.itemId);
-              if (itemToRemove) {
+              break;
+            case 'REMOVE_ITEM':
+              if (action.itemId) {
+                // Validate item exists in cart
+                const itemToRemove = cart.find((item) => item.id === action.itemId);
+                if (!itemToRemove) {
+                  confirmationMessage = `That item is not in your cart.`;
+                  break;
+                }
+                
                 cartContext.removeItem(action.itemId);
                 confirmationMessage = `✓ Removed ${itemToRemove.name} from your cart.`;
                 
@@ -126,13 +145,25 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                 } else {
                   confirmationMessage += ` Your cart is now empty.`;
                 }
+              } else {
+                confirmationMessage = `I'm not sure which item you'd like to remove. Could you be more specific?`;
               }
-            }
-            break;
-          case 'UPDATE_QUANTITY':
-            if (action.itemId && action.quantity !== undefined) {
-              const itemToUpdate = cart.find((item) => item.id === action.itemId);
-              if (itemToUpdate) {
+              break;
+            case 'UPDATE_QUANTITY':
+              if (action.itemId && action.quantity !== undefined) {
+                // Validate item exists in cart
+                const itemToUpdate = cart.find((item) => item.id === action.itemId);
+                if (!itemToUpdate) {
+                  confirmationMessage = `That item is not in your cart.`;
+                  break;
+                }
+                
+                // Validate quantity
+                if (action.quantity <= 0 || action.quantity > 100) {
+                  confirmationMessage = `Invalid quantity. Please specify a number between 1 and 100.`;
+                  break;
+                }
+                
                 cartContext.updateQuantity(action.itemId, action.quantity);
                 confirmationMessage = `✓ Updated ${itemToUpdate.name} quantity to ${action.quantity}.`;
                 
@@ -142,9 +173,10 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                   0
                 );
                 confirmationMessage += ` Your cart total is now $${updatedTotal.toFixed(2)}.`;
+              } else {
+                confirmationMessage = `I need both the item and quantity to update. Could you provide more details?`;
               }
-            }
-            break;
+              break;
           case 'SHOW_CART':
             // Generate cart summary
             if (cart.length === 0) {
@@ -157,13 +189,25 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
               confirmationMessage = `Your cart contains:\n${cartSummary}\n\nTotal: $${cartTotal.toFixed(2)}`;
             }
             break;
-          case 'CHECKOUT':
-            // Checkout will be handled by cart drawer
-            confirmationMessage = 'Opening checkout form. Please fill in your details to complete your order.';
-            if (onCartAction) {
-              onCartAction('Opening checkout');
-            }
-            break;
+            case 'CHECKOUT':
+              // Checkout will be handled by cart drawer
+              if (cart.length === 0) {
+                confirmationMessage = 'Your cart is empty. Please add items before checking out.';
+              } else {
+                confirmationMessage = 'Opening checkout form. Please fill in your details to complete your order.';
+                if (onCartAction) {
+                  onCartAction('Opening checkout');
+                }
+              }
+              break;
+            default:
+              // Unknown action type - just use AI response
+              break;
+          }
+        } catch (error) {
+          console.error('Error executing cart action:', error);
+          confirmationMessage = 'Sorry, I encountered an error processing that request. Please try again.';
+          toast.error('Failed to process cart action');
         }
         
         // Add confirmation message to chat if action was executed
@@ -194,6 +238,9 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
+      
+      // Show error toast
+      toast.error('Failed to get AI response. Please try again.');
     } finally {
       setIsLoading(false);
     }

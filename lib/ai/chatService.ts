@@ -109,6 +109,11 @@ export async function sendChatMessage(
   }
   
   try {
+    // Validate messages array
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw new Error('Invalid messages array');
+    }
+    
     // Convert ChatMessage format to OpenAI format
     const openAIMessages: Array<{
       role: 'system' | 'user' | 'assistant';
@@ -117,11 +122,25 @@ export async function sendChatMessage(
       { role: 'system', content: systemPrompt },
       ...messages
         .filter((msg) => msg.role !== 'system') // Filter out any system messages from history
-        .map((msg) => ({
-          role: msg.role === 'user' ? 'user' : 'assistant',
-          content: msg.content,
-        })),
+        .map((msg) => {
+          if (!msg.content || typeof msg.content !== 'string') {
+            throw new Error('Invalid message content');
+          }
+          return {
+            role: msg.role === 'user' ? 'user' : 'assistant',
+            content: msg.content,
+          };
+        }),
     ];
+    
+    // Validate menu and cart
+    if (!menu || !menu.categories || menu.categories.length === 0) {
+      throw new Error('Invalid menu data');
+    }
+    
+    if (!Array.isArray(cart)) {
+      throw new Error('Invalid cart data');
+    }
     
     const response = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
@@ -130,17 +149,25 @@ export async function sendChatMessage(
       max_tokens: 500,
     });
     
-    return response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content in AI response');
+    }
+    
+    return content;
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
     
     // Return friendly error message
     if (error instanceof Error) {
-      if (error.message.includes('API key')) {
+      if (error.message.includes('API key') || error.message.includes('configuration')) {
         throw new Error('AI service configuration error');
       }
       if (error.message.includes('rate limit')) {
         throw new Error('AI service is temporarily unavailable due to high demand');
+      }
+      if (error.message.includes('Invalid')) {
+        throw error; // Re-throw validation errors
       }
     }
     
