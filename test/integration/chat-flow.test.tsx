@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
 import { CartProvider } from '@/components/order/CartProvider';
 import { Menu } from '@/lib/schemas/menu';
