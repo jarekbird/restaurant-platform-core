@@ -1,8 +1,33 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCart } from '@/components/order/useCart';
 
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
+
 describe('useCart - Comprehensive Tests', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
   it('should add item to empty cart', () => {
     const { result } = renderHook(() => useCart());
 
