@@ -26,6 +26,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       />
       <style jsx global>{`
         /* Move TanStack Query Devtools toggle button (open) to top left */
+        /* Note: Close button is left to float naturally above the devtools panel */
         button[aria-label*="Open Tanstack query devtools"],
         button[aria-label*="Open TanStack query devtools"],
         button[aria-label*="open tanstack query devtools"],
@@ -35,18 +36,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
           left: 1rem !important;
           bottom: auto !important;
           right: auto !important;
-          z-index: 9999 !important;
-        }
-        
-        /* Keep close button in bottom right */
-        button[aria-label*="Close tanstack query devtools"],
-        button[aria-label*="Close TanStack query devtools"],
-        button[aria-label*="close tanstack query devtools"] {
-          position: fixed !important;
-          bottom: 1rem !important;
-          right: 1rem !important;
-          top: auto !important;
-          left: auto !important;
           z-index: 9999 !important;
         }
       `}</style>
