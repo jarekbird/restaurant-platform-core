@@ -6,7 +6,7 @@ import { ChatMessage, ChatMessage as ChatMessageType } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { Menu } from '@/lib/schemas/menu';
 import { CartItem } from '@/components/order/useCart';
-import { ChatMessage as ChatMessageTypeLib } from '@/lib/ai/types';
+import { ChatMessage as ChatMessageTypeLib, ChatRole } from '@/lib/ai/types';
 import { parseChatAction } from '@/lib/ai/actionParser';
 import { useCartContext } from '@/components/order/CartProvider';
 import { useOptionalToast } from '@/lib/hooks/useOptionalToast';
@@ -50,11 +50,11 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
       const apiMessages: ChatMessageTypeLib[] = [
         ...messages,
         {
-          role: 'user',
+          role: 'user' as ChatRole,
           content: message,
         },
       ].map((msg) => ({
-        role: msg.role,
+        role: msg.role as ChatRole,
         content: msg.content,
       }));
       

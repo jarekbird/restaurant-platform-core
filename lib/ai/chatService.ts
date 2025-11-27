@@ -7,7 +7,7 @@
 
 import { Menu } from '@/lib/schemas/menu';
 import { CartItem } from '@/components/order/useCart';
-import { ChatMessage } from './types';
+import { ChatMessage, ChatRole } from './types';
 import OpenAI from 'openai';
 
 /**
@@ -127,7 +127,7 @@ export async function sendChatMessage(
             throw new Error('Invalid message content');
           }
           return {
-            role: msg.role === 'user' ? 'user' : 'assistant',
+            role: (msg.role === 'user' ? 'user' : 'assistant') as ChatRole,
             content: msg.content,
           };
         }),
