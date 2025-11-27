@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { CheckoutForm } from './CheckoutForm';
 
 interface CartItem {
   id: string;
@@ -30,6 +32,8 @@ export function CartDrawer({
   onRemoveItem,
   onUpdateQuantity,
 }: CartDrawerProps) {
+  const [showCheckout, setShowCheckout] = useState(false);
+  
   if (!isOpen) {
     return null;
   }
@@ -67,9 +71,16 @@ export function CartDrawer({
             </button>
           </div>
 
-          {/* Items List */}
+          {/* Items List or Checkout Form */}
           <div className="flex-1 overflow-y-auto p-4">
-            {items.length === 0 ? (
+            {showCheckout ? (
+              <CheckoutForm
+                onSubmit={(formData) => {
+                  // Will be handled in next task
+                  console.log('Checkout submitted:', formData);
+                }}
+              />
+            ) : items.length === 0 ? (
               <p className="text-center text-gray-500 dark:text-gray-400">
                 Your cart is empty
               </p>
@@ -129,13 +140,29 @@ export function CartDrawer({
             )}
           </div>
 
-          {/* Footer with Total */}
-          {items.length > 0 && (
+          {/* Footer with Total and Checkout Button */}
+          {items.length > 0 && !showCheckout && (
             <div className="border-t border-gray-200 p-4 dark:border-gray-800">
               <div className="mb-4 flex justify-between text-lg font-semibold">
                 <span>Total:</span>
                 <span>${total.toFixed(2)}</span>
               </div>
+              <button
+                onClick={() => setShowCheckout(true)}
+                className="w-full rounded-md bg-black px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+              >
+                Checkout
+              </button>
+            </div>
+          )}
+          {showCheckout && (
+            <div className="border-t border-gray-200 p-4 dark:border-gray-800">
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                Back to Cart
+              </button>
             </div>
           )}
         </div>
