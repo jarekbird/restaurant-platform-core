@@ -73,8 +73,8 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
     <RestaurantThemeProvider themeKey={config.theme}>
       <div className="flex min-h-screen flex-col">
       {/* Header with cart button */}
-      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
-        <div className="relative flex w-full items-center justify-between py-4">
+      <header className="sticky top-0 z-50 min-h-[72px] flex items-center border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
+        <div className="relative flex w-full items-center justify-between px-4 py-4">
           {/* Cart Button on the far right - positioned at absolute right edge */}
           <div className="absolute right-0 flex items-center pr-4">
             <OrderButton

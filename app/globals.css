@@ -24,3 +24,22 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Move TanStack Query Devtools button to top left */
+button[aria-label*="Tanstack query devtools"],
+button[aria-label*="TanStack query devtools"],
+button[aria-label*="Open Tanstack query devtools"],
+button[aria-label*="Open TanStack query devtools"],
+button[aria-label*="tanstack query devtools"],
+button[aria-label*="open tanstack query devtools"],
+[data-react-query-devtools-button],
+[data-testid*="devtools"],
+.tsqd-button,
+button[class*="tsqd"] {
+  position: fixed !important;
+  top: 1rem !important;
+  left: 1rem !important;
+  bottom: auto !important;
+  right: auto !important;
+  z-index: 9999 !important;
+}
