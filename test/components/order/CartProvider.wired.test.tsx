@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { CartProvider, useCartContext } from '@/components/order/CartProvider';
 
 describe('CartProvider - Wired to useCart', () => {
+  beforeEach(() => {
+    // Clear localStorage before each test to ensure clean state
+    localStorage.clear();
+  });
   it('should provide cart functionality through context', () => {
     const TestComponent = () => {
       const cart = useCartContext();
