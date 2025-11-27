@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { CheckoutForm } from './CheckoutForm';
 import { OrderConfirmationModal } from './OrderConfirmationModal';
+import { useOptionalToast } from '@/lib/hooks/useOptionalToast';
 
 interface CartItem {
   id: string;
@@ -44,6 +45,13 @@ export function CartDrawer({
   onPlaceOrder,
 }: CartDrawerProps) {
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [orderData, setOrderData] = useState<{
+    items: CartItem[];
+    total: number;
+    customerName: string;
+  } | null>(null);
+  const toast = useOptionalToast();
   
   const handleCheckout = (formData: { name: string; phone: string; notes?: string }) => {
     const order = {
@@ -59,6 +67,9 @@ export function CartDrawer({
     if (onPlaceOrder) {
       onPlaceOrder(order);
     }
+    
+    // Show success toast
+    toast.success('Order placed successfully!');
     
     // Show confirmation modal
     setOrderData({
