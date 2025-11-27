@@ -101,7 +101,14 @@ export function CartDrawer({
       <div
         className="fixed inset-0 z-40 bg-black/50"
         onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            onClose();
+          }
+        }}
         aria-hidden="true"
+        role="button"
+        tabIndex={-1}
       />
       {/* Drawer */}
       <div
@@ -122,6 +129,12 @@ export function CartDrawer({
             <h2 className="text-xl font-semibold">Cart</h2>
             <button
               onClick={onClose}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onClose();
+                }
+              }}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               aria-label="Close cart"
             >

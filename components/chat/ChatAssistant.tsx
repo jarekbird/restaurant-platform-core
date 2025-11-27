@@ -358,7 +358,14 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
         <div
           className="fixed inset-0 z-40 bg-black/50 md:hidden"
           onClick={toggleChat}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              toggleChat();
+            }
+          }}
           aria-hidden="true"
+          role="button"
+          tabIndex={-1}
         />
       )}
     </>

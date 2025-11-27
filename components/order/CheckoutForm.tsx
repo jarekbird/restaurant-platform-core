@@ -87,6 +87,7 @@ export function CheckoutForm({ onSubmit, className }: CheckoutFormProps) {
       <button
         type="submit"
         className="w-full rounded-md bg-black px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+        aria-label="Submit order"
       >
         Submit Order
       </button>
