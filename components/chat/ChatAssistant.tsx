@@ -77,14 +77,11 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
       
       const data = await response.json();
       
-      // Parse action from AI response FIRST, before showing the message
+      // Parse action from AI response to execute cart operations
       const action = parseChatAction(data.message, menu);
       
-      // Execute cart action if found - this takes priority over the AI's message
-      if (action && (action.type === 'ADD_ITEM' || action.type === 'REMOVE_ITEM' || action.type === 'UPDATE_QUANTITY' || action.type === 'SHOW_CART' || action.type === 'CHECKOUT')) {
-        let confirmationMessage = '';
-        let actionSucceeded = false;
-        
+      // Execute cart action if found
+      if (action && (action.type === 'ADD_ITEM' || action.type === 'REMOVE_ITEM' || action.type === 'UPDATE_QUANTITY' || action.type === 'CHECKOUT')) {
         try {
           switch (action.type) {
             case 'ADD_ITEM':
@@ -105,207 +102,66 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
                   
                   if (itemByName) {
                     const quantity = action.quantity || 1;
-                    
-                    // Calculate total before adding (since state updates are async)
-                    const currentTotal = cartContext.items.reduce(
-                      (sum, item) => sum + item.price * item.quantity,
-                      0
-                    );
-                    
-                    // Check if item already exists in cart to calculate correct new total
-                    const existingItem = cartContext.items.find(item => item.id === itemByName.id);
-                    let newTotal: number;
-                    
-                    if (existingItem) {
-                      // Item exists, will increment quantity
-                      const newQuantity = existingItem.quantity + quantity;
-                      const itemTotal = itemByName.price * newQuantity;
-                      // Remove old item total and add new item total
-                      newTotal = currentTotal - (existingItem.price * existingItem.quantity) + itemTotal;
-                    } else {
-                      // New item, just add the price * quantity
-                      newTotal = currentTotal + (itemByName.price * quantity);
+                    if (quantity > 0 && quantity <= 100) {
+                      for (let i = 0; i < quantity; i++) {
+                        cartContext.addItem({
+                          id: itemByName.id,
+                          name: itemByName.name,
+                          price: itemByName.price,
+                        });
+                      }
                     }
-                    
+                  }
+                } else {
+                  const quantity = action.quantity || 1;
+                  if (quantity > 0 && quantity <= 100) {
                     for (let i = 0; i < quantity; i++) {
                       cartContext.addItem({
-                        id: itemByName.id,
-                        name: itemByName.name,
-                        price: itemByName.price,
+                        id: menuItem.id,
+                        name: menuItem.name,
+                        price: menuItem.price,
                       });
                     }
-                    confirmationMessage = `✓ Added ${quantity} ${itemByName.name}${quantity > 1 ? 's' : ''} to your cart.`;
-                    actionSucceeded = true;
-                    confirmationMessage += ` Your cart total is now $${newTotal.toFixed(2)}.`;
-                    break;
                   }
-                  
-                  confirmationMessage = `Sorry, I couldn't find that item on the menu. Please try again.`;
-                  break;
                 }
-                
-                const quantity = action.quantity || 1;
-                if (quantity <= 0 || quantity > 100) {
-                  confirmationMessage = `Invalid quantity. Please specify a number between 1 and 100.`;
-                  break;
-                }
-                
-                // Calculate total before adding (since state updates are async)
-                const currentTotal = cartContext.items.reduce(
-                  (sum, item) => sum + item.price * item.quantity,
-                  0
-                );
-                
-                // Check if item already exists in cart to calculate correct new total
-                const existingItem = cartContext.items.find(item => item.id === menuItem.id);
-                let newTotal: number;
-                
-                if (existingItem) {
-                  // Item exists, will increment quantity
-                  const newQuantity = existingItem.quantity + quantity;
-                  const itemTotal = menuItem.price * newQuantity;
-                  // Remove old item total and add new item total
-                  newTotal = currentTotal - (existingItem.price * existingItem.quantity) + itemTotal;
-                } else {
-                  // New item, just add the price * quantity
-                  newTotal = currentTotal + (menuItem.price * quantity);
-                }
-                
-                for (let i = 0; i < quantity; i++) {
-                  cartContext.addItem({
-                    id: menuItem.id,
-                    name: menuItem.name,
-                    price: menuItem.price,
-                  });
-                }
-                confirmationMessage = `✓ Added ${quantity} ${menuItem.name}${quantity > 1 ? 's' : ''} to your cart.`;
-                actionSucceeded = true;
-                confirmationMessage += ` Your cart total is now $${newTotal.toFixed(2)}.`;
-              } else {
-                confirmationMessage = `I'm not sure which item you'd like to add. Could you be more specific?`;
               }
               break;
             case 'REMOVE_ITEM':
               if (action.itemId) {
-                // Validate item exists in cart
                 const itemToRemove = cart.find((item) => item.id === action.itemId);
-                if (!itemToRemove) {
-                  confirmationMessage = `That item is not in your cart.`;
-                  break;
+                if (itemToRemove) {
+                  cartContext.removeItem(action.itemId);
                 }
-                
-                cartContext.removeItem(action.itemId);
-                confirmationMessage = `✓ Removed ${itemToRemove.name} from your cart.`;
-                
-                // Add updated cart summary
-                const updatedCartTotal = cartContext.items.reduce(
-                  (sum, item) => sum + item.price * item.quantity,
-                  0
-                );
-                if (cartContext.items.length > 0) {
-                  confirmationMessage += ` Your cart total is now $${updatedCartTotal.toFixed(2)}.`;
-                } else {
-                  confirmationMessage += ` Your cart is now empty.`;
-                }
-              } else {
-                confirmationMessage = `I'm not sure which item you'd like to remove. Could you be more specific?`;
               }
               break;
             case 'UPDATE_QUANTITY':
               if (action.itemId && action.quantity !== undefined) {
-                // Validate item exists in cart
                 const itemToUpdate = cart.find((item) => item.id === action.itemId);
-                if (!itemToUpdate) {
-                  confirmationMessage = `That item is not in your cart.`;
-                  break;
+                if (itemToUpdate && action.quantity > 0 && action.quantity <= 100) {
+                  cartContext.updateQuantity(action.itemId, action.quantity);
                 }
-                
-                // Validate quantity
-                if (action.quantity <= 0 || action.quantity > 100) {
-                  confirmationMessage = `Invalid quantity. Please specify a number between 1 and 100.`;
-                  break;
-                }
-                
-                cartContext.updateQuantity(action.itemId, action.quantity);
-                confirmationMessage = `✓ Updated ${itemToUpdate.name} quantity to ${action.quantity}.`;
-                
-                // Add cart summary
-                const updatedTotal = cartContext.items.reduce(
-                  (sum, item) => sum + item.price * item.quantity,
-                  0
-                );
-                confirmationMessage += ` Your cart total is now $${updatedTotal.toFixed(2)}.`;
-              } else {
-                confirmationMessage = `I need both the item and quantity to update. Could you provide more details?`;
               }
               break;
-          case 'SHOW_CART':
-            // Generate cart summary
-            if (cart.length === 0) {
-              confirmationMessage = 'Your cart is empty. Would you like to add something?';
-            } else {
-              const cartSummary = cart
-                .map((item) => `${item.name} × ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`)
-                .join('\n');
-              const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-              confirmationMessage = `Your cart contains:\n${cartSummary}\n\nTotal: $${cartTotal.toFixed(2)}`;
-            }
-            break;
             case 'CHECKOUT':
-              // Checkout will be handled by cart drawer
-              if (cart.length === 0) {
-                confirmationMessage = 'Your cart is empty. Please add items before checking out.';
-              } else {
-                confirmationMessage = 'Opening checkout form. Please fill in your details to complete your order.';
-                if (onCartAction) {
-                  onCartAction('Opening checkout');
-                }
+              if (cart.length > 0 && onCartAction) {
+                onCartAction('Opening checkout');
               }
-              break;
-            default:
-              // Unknown action type - just use AI response
               break;
           }
         } catch (error) {
           console.error('Error executing cart action:', error);
-          confirmationMessage = 'Sorry, I encountered an error processing that request. Please try again.';
           toast.error('Failed to process cart action');
         }
-        
-        // If action succeeded, show confirmation message instead of AI's message
-        if (actionSucceeded && confirmationMessage) {
-          const confirmationMsg: ChatMessageType = {
-            role: 'assistant',
-            content: confirmationMessage,
-            timestamp: new Date(),
-          };
-          setMessages((prev) => [...prev, confirmationMsg]);
-        } else if (confirmationMessage && !actionSucceeded) {
-          // Show error message if action failed
-          const errorMsg: ChatMessageType = {
-            role: 'assistant',
-            content: confirmationMessage,
-            timestamp: new Date(),
-          };
-          setMessages((prev) => [...prev, errorMsg]);
-        } else if (!action || action.type === 'ANSWER_QUESTION') {
-          // Only show AI's message if no action was found or it's just answering a question
-          const assistantMessage: ChatMessageType = {
-            role: 'assistant',
-            content: data.message,
-            timestamp: new Date(data.timestamp),
-          };
-          setMessages((prev) => [...prev, assistantMessage]);
-        }
-      } else {
-        // No action found, show AI's response
-        const assistantMessage: ChatMessageType = {
-          role: 'assistant',
-          content: data.message,
-          timestamp: new Date(data.timestamp),
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
       }
+      
+      // Always show the LLM's response - it already has the menu and cart context
+      // The LLM calculates and includes the updated cart total in its response
+      const assistantMessage: ChatMessageType = {
+        role: 'assistant',
+        content: data.message,
+        timestamp: new Date(data.timestamp),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error calling chat API:', error);
       
