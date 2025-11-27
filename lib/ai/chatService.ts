@@ -1,11 +1,14 @@
 /**
  * AI Chat Service
  * Handles communication with LLM for chat-based ordering
+ * 
+ * NOTE: This is a server-only module. Do not import directly in client components.
  */
 
 import { Menu } from '@/lib/schemas/menu';
 import { CartItem } from '@/components/order/useCart';
 import { ChatMessage } from './types';
+import OpenAI from 'openai';
 
 /**
  * Build system prompt for AI chat assistant
@@ -67,22 +70,81 @@ Format your responses naturally, but include structured actions when needed.`;
  * Send chat message to LLM
  * This is a placeholder - will be implemented with actual LLM API in next task
  */
+/**
+ * Initialize OpenAI client
+ * Reads API key from environment variables
+ */
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    console.warn('OPENAI_API_KEY not found in environment variables');
+    return null;
+  }
+  
+  return new OpenAI({ apiKey });
+}
+
+/**
+ * Send chat message to LLM
+ * Server-side only - must be called from API route
+ * 
+ * @param messages - Conversation history
+ * @param menu - Current menu data
+ * @param cart - Current cart state
+ * @returns AI response text
+ * @throws Error if API call fails or API key is missing
+ */
 export async function sendChatMessage(
   messages: ChatMessage[],
   menu: Menu,
   cart: CartItem[]
 ): Promise<string> {
-  // Placeholder implementation - will be replaced with actual LLM API call
-  // System prompt will be used when LLM integration is added
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _systemPrompt = buildSystemPrompt(menu, cart);
+  const systemPrompt = buildSystemPrompt(menu, cart);
+  const client = getOpenAIClient();
   
-  // For now, return a simple response
-  const lastMessage = messages[messages.length - 1];
-  if (lastMessage?.role === 'user') {
-    return `I understand you said: "${lastMessage.content}". AI integration will be implemented in the next task.`;
+  // If no API key, return fallback response
+  if (!client) {
+    return 'AI assistant is currently unavailable. Please use the menu to add items to your cart.';
   }
   
-  return 'How can I help you with your order?';
+  try {
+    // Convert ChatMessage format to OpenAI format
+    const openAIMessages: Array<{
+      role: 'system' | 'user' | 'assistant';
+      content: string;
+    }> = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+        .filter((msg) => msg.role !== 'system') // Filter out any system messages from history
+        .map((msg) => ({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content,
+        })),
+    ];
+    
+    const response = await client.chat.completions.create({
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      messages: openAIMessages,
+      temperature: 0.7,
+      max_tokens: 500,
+    });
+    
+    return response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+  } catch (error) {
+    console.error('Error calling OpenAI API:', error);
+    
+    // Return friendly error message
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        throw new Error('AI service configuration error');
+      }
+      if (error.message.includes('rate limit')) {
+        throw new Error('AI service is temporarily unavailable due to high demand');
+      }
+    }
+    
+    throw new Error('Failed to get AI response');
+  }
 }
 
