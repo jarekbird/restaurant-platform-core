@@ -34,7 +34,8 @@ describe('OrderConfirmationModal', () => {
     );
     
     expect(screen.getByText('Order Confirmed!')).toBeInTheDocument();
-    expect(screen.getByText(/Thank you, John Doe/)).toBeInTheDocument();
+    expect(screen.getByText(/Thank you/)).toBeInTheDocument();
+    expect(screen.getByText(/John Doe/)).toBeInTheDocument();
   });
 
   it('should display order summary correctly', () => {
