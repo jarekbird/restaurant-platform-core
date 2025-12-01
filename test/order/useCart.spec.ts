@@ -2,11 +2,36 @@
  * Tests for useCart hook
  */
 
-import { describe, it, expect } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useCart } from '@/components/order/useCart';
 
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
+
 describe('useCart', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
   it('should initialize with empty cart', () => {
     const { result } = renderHook(() => useCart());
 
@@ -33,8 +58,13 @@ describe('useCart', () => {
     expect(result.current.itemCount).toBe(1);
   });
 
-  it('should increment quantity when adding same item', () => {
+  it('should increment quantity when adding same item', async () => {
     const { result } = renderHook(() => useCart());
+
+    // Wait for hydration to complete
+    await waitFor(() => {
+      expect(result.current.items).toEqual([]);
+    });
 
     act(() => {
       result.current.addItem({
@@ -171,8 +201,13 @@ describe('useCart', () => {
     expect(result.current.itemCount).toBe(3);
   });
 
-  it('should handle items with modifiers separately', () => {
+  it('should handle items with modifiers separately', async () => {
     const { result } = renderHook(() => useCart());
+
+    // Wait for hydration to complete
+    await waitFor(() => {
+      expect(result.current.items).toEqual([]);
+    });
 
     act(() => {
       result.current.addItem({
