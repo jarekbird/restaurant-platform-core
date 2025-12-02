@@ -99,5 +99,20 @@ describe('OrderConfirmationModal', () => {
     expect(modal).toHaveAttribute('aria-labelledby', 'order-confirmation-title');
     expect(modal).toHaveAttribute('aria-describedby', 'order-confirmation-description');
   });
+
+  it('should call onClose when Escape key is pressed', () => {
+    const handleClose = vi.fn();
+    render(
+      <OrderConfirmationModal
+        isOpen={true}
+        onClose={handleClose}
+        orderSummary={mockOrderSummary}
+      />
+    );
+    
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+    
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
 });
 
