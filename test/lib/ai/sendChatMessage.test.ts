@@ -58,7 +58,10 @@ describe('sendChatMessage', () => {
     
     const response = await sendChatMessage(mockMessages, mockMenu, mockCart);
     
-    expect(response).toContain('unavailable');
+    expect(response).toBeDefined();
+    expect(response.response_to_user).toBeDefined();
+    expect(response.response_to_user).toContain('unavailable');
+    expect(response.action).toBeNull();
   });
 
   it('should have error handling structure', () => {
