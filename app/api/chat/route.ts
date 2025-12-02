@@ -83,49 +83,178 @@ export async function POST(request: NextRequest) {
       throw new Error('Invalid cart item format');
     });
     
-    // Call AI service
-    const response = await sendChatMessage(messages, menu, cart);
+    // Call AI service with robust error handling
+    let response;
+    try {
+      response = await sendChatMessage(messages, menu, cart);
+    } catch (aiError) {
+      console.error('Error calling sendChatMessage:', aiError);
+      
+      // Handle specific error types from sendChatMessage
+      if (aiError instanceof Error) {
+        if (aiError.message.includes('configuration') || aiError.message.includes('API key')) {
+          return NextResponse.json(
+            { 
+              error: 'AI service configuration error',
+              response_to_user: 'I\'m currently unavailable due to a configuration issue. Please use the menu to add items to your cart.',
+              action: null,
+            },
+            { status: 500 }
+          );
+        }
+        if (aiError.message.includes('temporarily unavailable') || aiError.message.includes('rate limit')) {
+          return NextResponse.json(
+            { 
+              error: 'AI service is temporarily unavailable',
+              response_to_user: 'I\'m temporarily unavailable due to high demand. Please try again in a moment, or use the menu to add items to your cart.',
+              action: null,
+            },
+            { status: 503 }
+          );
+        }
+        if (aiError.message.includes('Failed to get')) {
+          return NextResponse.json(
+            { 
+              error: 'Failed to get AI response',
+              response_to_user: 'I encountered an error processing your request. Please try again, or use the menu to add items to your cart.',
+              action: null,
+            },
+            { status: 500 }
+          );
+        }
+        if (aiError.message.includes('Invalid')) {
+          return NextResponse.json(
+            { 
+              error: aiError.message,
+              response_to_user: `I encountered an error: ${aiError.message}. Please try again.`,
+              action: null,
+            },
+            { status: 400 }
+          );
+        }
+      }
+      
+      // Generic AI error fallback
+      return NextResponse.json(
+        { 
+          error: 'AI service error',
+          response_to_user: 'I\'m having trouble processing your request right now. Please try again, or use the menu to add items to your cart.',
+          action: null,
+        },
+        { status: 500 }
+      );
+    }
+    
+    // Validate response structure
+    if (!response || typeof response !== 'object') {
+      console.error('Invalid response from sendChatMessage:', response);
+      return NextResponse.json(
+        { 
+          error: 'Invalid response from AI service',
+          response_to_user: 'I received an invalid response. Please try again, or use the menu to add items to your cart.',
+          action: null,
+        },
+        { status: 500 }
+      );
+    }
+    
+    if (!response.response_to_user || typeof response.response_to_user !== 'string') {
+      console.error('Missing or invalid response_to_user in AI response:', response);
+      return NextResponse.json(
+        { 
+          error: 'Invalid response format from AI service',
+          response_to_user: 'I received an invalid response format. Please try again, or use the menu to add items to your cart.',
+          action: null,
+        },
+        { status: 500 }
+      );
+    }
     
     return NextResponse.json({
       response_to_user: response.response_to_user,
-      action: response.action,
+      action: response.action || null,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('Error in /api/chat:', error);
     
+    // Handle JSON parsing errors
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { 
+          error: 'Invalid request body',
+          response_to_user: 'I received an invalid request. Please try again.',
+          action: null,
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Handle validation errors from Zod
+    if (error && typeof error === 'object' && 'issues' in error) {
+      return NextResponse.json(
+        { 
+          error: 'Invalid menu data',
+          response_to_user: 'I received invalid menu data. Please try again.',
+          action: null,
+        },
+        { status: 400 }
+      );
+    }
+    
     if (error instanceof Error) {
       // Handle specific error types
       if (error.message.includes('configuration')) {
         return NextResponse.json(
-          { error: 'AI service configuration error' },
+          { 
+            error: 'AI service configuration error',
+            response_to_user: 'I\'m currently unavailable due to a configuration issue. Please use the menu to add items to your cart.',
+            action: null,
+          },
           { status: 500 }
         );
       }
       if (error.message.includes('temporarily unavailable')) {
         return NextResponse.json(
-          { error: 'AI service is temporarily unavailable' },
+          { 
+            error: 'AI service is temporarily unavailable',
+            response_to_user: 'I\'m temporarily unavailable. Please try again in a moment, or use the menu to add items to your cart.',
+            action: null,
+          },
           { status: 503 }
         );
       }
       if (error.message.includes('Failed to get')) {
         return NextResponse.json(
-          { error: 'Failed to get AI response' },
+          { 
+            error: 'Failed to get AI response',
+            response_to_user: 'I encountered an error processing your request. Please try again, or use the menu to add items to your cart.',
+            action: null,
+          },
           { status: 500 }
+        );
+      }
+      
+      // Validation errors
+      if (error.message.includes('Invalid')) {
+        return NextResponse.json(
+          { 
+            error: error.message,
+            response_to_user: `I encountered an error: ${error.message}. Please try again.`,
+            action: null,
+          },
+          { status: 400 }
         );
       }
     }
     
-    // Validation errors
-    if (error instanceof Error && error.message.includes('Invalid')) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-    
+    // Generic fallback
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        response_to_user: 'I encountered an unexpected error. Please try again, or use the menu to add items to your cart.',
+        action: null,
+      },
       { status: 500 }
     );
   }
