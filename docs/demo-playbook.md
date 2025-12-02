@@ -40,7 +40,7 @@ This document provides a clear guide for demonstrating the restaurant-platform-c
 
 ## Cart Flow Demo
 
-This section provides detailed step-by-step instructions for demonstrating the complete cart flow, from adding items to checkout.
+This section provides detailed step-by-step instructions for demonstrating the complete cart flow, including adding items, removing items, adjusting quantities, and completing checkout.
 
 ### Step 1: Adding Items to Cart
 
