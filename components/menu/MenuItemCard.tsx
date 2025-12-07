@@ -5,6 +5,7 @@ import { MenuItem } from '@/lib/schemas/menu';
 import { cn } from '@/lib/utils';
 import { useCartContext } from '@/components/order/CartProvider';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { trackAddToCart } from '@/lib/analytics/events';
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -26,6 +27,7 @@ export function MenuItemCard({ item, className }: MenuItemCardProps) {
       price: item.price,
       modifiers: [], // Default to no modifiers for now
     });
+    trackAddToCart(item);
   };
   
   return (

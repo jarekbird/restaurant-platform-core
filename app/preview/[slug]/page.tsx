@@ -14,6 +14,7 @@ import { ToastProvider } from '@/components/ui/ToastProvider';
 import { buildRestaurantMetadata } from '@/lib/seo/restaurantMetadata';
 import { buildRestaurantJsonLd } from '@/lib/seo/schema';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { trackViewRestaurant } from '@/lib/analytics/events';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
@@ -70,6 +71,9 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
 
   const { config, menu } = restaurant;
   const jsonLd = buildRestaurantJsonLd(config);
+  
+  // Track page view
+  trackViewRestaurant(config);
 
         return (
           <ToastProvider>

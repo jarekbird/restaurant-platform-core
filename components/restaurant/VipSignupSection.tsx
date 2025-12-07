@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { useToastContext } from '@/components/ui/ToastProvider';
+import { trackJoinVip } from '@/lib/analytics/events';
 
 interface VipSignupSectionProps {
   className?: string;
@@ -58,6 +59,7 @@ export function VipSignupSection({ className }: VipSignupSectionProps) {
 
     // Mock submit - log to console and show toast
     console.log('VIP Signup:', { email: email || undefined, phone: phone || undefined });
+    trackJoinVip({ email: email || undefined, phone: phone || undefined });
     success('Thank you for signing up! You\'ll receive exclusive offers soon.');
 
     // Clear form

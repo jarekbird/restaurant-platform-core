@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { CheckoutForm } from './CheckoutForm';
 import { OrderConfirmationModal } from './OrderConfirmationModal';
 import { useOptionalToast } from '@/lib/hooks/useOptionalToast';
+import { trackStartCheckout, trackCompleteOrder } from '@/lib/analytics/events';
 
 interface CartItem {
   id: string;
@@ -71,6 +72,9 @@ export function CartDrawer({
     
     // Log order for demo purposes (MOCK-ONLY - no real processing)
     console.log('Order placed:', order);
+    
+    // Track order completion
+    trackCompleteOrder(order);
     
     // Call onPlaceOrder if provided (also mock-only)
     if (onPlaceOrder) {
@@ -225,7 +229,10 @@ export function CartDrawer({
                 <span>${total.toFixed(2)}</span>
               </div>
               <button
-                onClick={() => setShowCheckout(true)}
+                onClick={() => {
+                  setShowCheckout(true);
+                  trackStartCheckout();
+                }}
                 className="w-full touch-manipulation rounded-md bg-black px-4 py-3 text-base font-semibold text-white transition-colors active:bg-gray-700 hover:bg-gray-800 dark:bg-white dark:text-black dark:active:bg-gray-300 dark:hover:bg-gray-200"
               >
                 Checkout

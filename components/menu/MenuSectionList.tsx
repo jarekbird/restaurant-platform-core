@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { Menu } from '@/lib/schemas/menu';
 import { MenuItemCard } from './MenuItemCard';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { trackViewMenuCategory } from '@/lib/analytics/events';
 
 interface MenuSectionListProps {
   menu: Menu;
@@ -16,11 +18,22 @@ interface MenuSectionListProps {
  */
 export function MenuSectionList({ menu, className }: MenuSectionListProps) {
   const theme = useTheme();
+  const trackedCategories = useRef<Set<string>>(new Set());
+  
+  // Track category views when they come into view (optional)
+  useEffect(() => {
+    menu.categories.forEach((category) => {
+      if (!trackedCategories.current.has(category.id)) {
+        trackViewMenuCategory(category.name);
+        trackedCategories.current.add(category.id);
+      }
+    });
+  }, [menu.categories]);
   
   return (
     <div className={cn('container mx-auto px-4 py-12 space-y-12', className)}>
       {menu.categories.map((category) => (
-        <section key={category.id} className="mb-8">
+        <section key={category.id} className="mb-8" id={`menu-section-${category.id}`}>
           <div className="mb-4">
             <h2 className={cn('text-2xl font-bold', theme.colors.text, theme.typography.heading)}>
               {category.name}
