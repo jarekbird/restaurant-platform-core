@@ -3,6 +3,7 @@
 import { MenuItem } from '@/lib/schemas/menu';
 import { cn } from '@/lib/utils';
 import { useCartContext } from '@/components/order/CartProvider';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -15,6 +16,7 @@ interface MenuItemCardProps {
  */
 export function MenuItemCard({ item, className }: MenuItemCardProps) {
   const { addItem } = useCartContext();
+  const theme = useTheme();
   
   const handleAddToCart = () => {
     addItem({
@@ -28,15 +30,19 @@ export function MenuItemCard({ item, className }: MenuItemCardProps) {
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900',
+        'rounded-lg border p-4 shadow-sm',
+        theme.colors.surface,
+        theme.colors.border,
         className
       )}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold">{item.name}</h3>
+          <h3 className={cn('text-lg font-semibold', theme.colors.text, theme.typography.heading)}>
+            {item.name}
+          </h3>
           {item.description && (
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p className={cn('mt-1 text-sm', theme.colors.textMuted, theme.typography.body)}>
               {item.description}
             </p>
           )}
@@ -45,7 +51,7 @@ export function MenuItemCard({ item, className }: MenuItemCardProps) {
               {item.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                  className={cn('rounded-full px-2 py-1 text-xs', theme.colors.secondary, theme.colors.text)}
                 >
                   {tag}
                 </span>
@@ -54,7 +60,7 @@ export function MenuItemCard({ item, className }: MenuItemCardProps) {
           )}
           {item.modifiers && item.modifiers.length > 0 && (
             <div className="mt-3">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className={cn('text-xs', theme.colors.textMuted)}>
                 Customization options available
               </p>
               {/* Placeholder for modifiers - full selection not implemented yet */}
@@ -62,7 +68,7 @@ export function MenuItemCard({ item, className }: MenuItemCardProps) {
           )}
         </div>
         <div className="ml-4 text-right">
-          <span className="text-lg font-semibold">
+          <span className={cn('text-lg font-semibold', theme.colors.text)}>
             ${item.price.toFixed(2)}
           </span>
         </div>
@@ -70,7 +76,7 @@ export function MenuItemCard({ item, className }: MenuItemCardProps) {
       <div className="mt-4">
         <button
           onClick={handleAddToCart}
-          className="w-full rounded-md bg-black px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+          className={cn('w-full rounded-md px-4 py-2 text-sm font-semibold transition-colors', theme.colors.primary)}
           aria-label={`Add ${item.name} to cart`}
         >
           Add to Cart
@@ -79,7 +85,7 @@ export function MenuItemCard({ item, className }: MenuItemCardProps) {
       {item.image && (
         <div className="mt-4">
           {/* Image placeholder - will be implemented with Next.js Image later */}
-          <div className="h-32 w-full rounded bg-gray-200 dark:bg-gray-700" />
+          <div className={cn('h-32 w-full rounded', theme.colors.surface)} />
         </div>
       )}
     </div>
