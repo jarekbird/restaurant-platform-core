@@ -117,5 +117,72 @@ describe('MenuItemCard Theme Usage', () => {
       expect(priceElement.className).toContain('font-semibold');
     });
   });
+
+  describe('Theme Token Usage', () => {
+    it('should use theme.colors.surface for card background', () => {
+      const { container } = render(
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="warm-pizza">
+            <MenuItemCard item={mockItem} />
+          </RestaurantThemeProvider>
+        </CartProvider>
+      );
+
+      const card = container.querySelector('div[class*="rounded-lg"]');
+      expect(card?.className).toContain('bg-');
+    });
+
+    it('should use theme.colors.text for item name', () => {
+      const { container } = render(
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="modern-sushi">
+            <MenuItemCard item={mockItem} />
+          </RestaurantThemeProvider>
+        </CartProvider>
+      );
+
+      const h3 = container.querySelector('h3');
+      expect(h3?.className).toContain('text-');
+    });
+
+    it('should use theme.colors.textMuted for description', () => {
+      const { container } = render(
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="cafe-warm">
+            <MenuItemCard item={mockItem} />
+          </RestaurantThemeProvider>
+        </CartProvider>
+      );
+
+      const p = container.querySelector('p');
+      expect(p?.className).toContain('text-');
+    });
+
+    it('should use theme.colors.border for card border', () => {
+      const { container } = render(
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="sushi-dark">
+            <MenuItemCard item={mockItem} />
+          </RestaurantThemeProvider>
+        </CartProvider>
+      );
+
+      const card = container.querySelector('div[class*="rounded-lg"]');
+      expect(card?.className).toContain('border');
+    });
+
+    it('should use theme.colors.primary for Add to Cart button', () => {
+      const { container } = render(
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="warm-pizza">
+            <MenuItemCard item={mockItem} />
+          </RestaurantThemeProvider>
+        </CartProvider>
+      );
+
+      const button = container.querySelector('button');
+      expect(button?.className).toContain('bg-');
+    });
+  });
 });
 
