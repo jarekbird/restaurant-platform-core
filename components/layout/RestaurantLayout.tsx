@@ -166,11 +166,11 @@ function RestaurantLayoutContent({
                 </a>
               )}
             </div>
-            {/* Cart Button on the far right - positioned at absolute right edge */}
+            {/* Order Button on the far right - positioned at absolute right edge */}
             <div className="absolute right-0 flex items-center pr-4">
               <OrderButton
                 onClick={onCartToggle}
-                label="Cart"
+                label="Order Online"
                 itemCount={itemCount}
               />
             </div>

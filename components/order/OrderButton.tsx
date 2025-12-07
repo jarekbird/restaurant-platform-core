@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 interface OrderButtonProps {
   onClick?: () => void;
@@ -43,19 +44,22 @@ export function OrderButton({
   className,
   itemCount = 0,
 }: OrderButtonProps) {
+  const theme = useTheme();
   const isCartButton = label.toLowerCase() === 'cart';
-  const ariaLabel = itemCount > 0 ? `Cart (${itemCount} items)` : 'Cart';
+  const ariaLabel = itemCount > 0 ? `${label} (${itemCount} items)` : label;
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        'relative rounded-full bg-black px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200',
+        'relative rounded-full px-8 py-4 text-lg font-semibold transition-colors',
+        theme.colors.primary,
+        theme.typography.heading,
         // Adjust padding for icon-only button
         isCartButton && 'px-4',
         className
       )}
-      aria-label={isCartButton ? ariaLabel : (itemCount > 0 ? `${label} (${itemCount} items)` : label)}
+      aria-label={ariaLabel}
     >
       {isCartButton ? (
         <CartIcon className="h-6 w-6" />
