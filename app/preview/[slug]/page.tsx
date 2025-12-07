@@ -12,6 +12,8 @@ import { CartProvider } from '@/components/order/CartProvider';
 import { ChatAssistantWrapper } from '@/components/chat/ChatAssistantWrapper';
 import { ToastProvider } from '@/components/ui/ToastProvider';
 import { buildRestaurantMetadata } from '@/lib/seo/restaurantMetadata';
+import { buildRestaurantJsonLd } from '@/lib/seo/schema';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
@@ -67,10 +69,12 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
   }
 
   const { config, menu } = restaurant;
+  const jsonLd = buildRestaurantJsonLd(config);
 
         return (
           <ToastProvider>
             <CartProvider>
+              <JsonLd data={jsonLd} />
               <RestaurantLayout config={config}>
                 <HeroSection config={config} />
                 <SeoContentBlock config={config} />
