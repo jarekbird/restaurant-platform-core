@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
+import Image from 'next/image';
 import { RestaurantConfig } from '@/lib/schemas/restaurant';
 import { RestaurantThemeProvider, useTheme } from '@/components/theme/ThemeProvider';
 import { useCartContext } from '@/components/order/CartProvider';
@@ -141,9 +142,30 @@ function RestaurantLayoutContent({
   return (
     <>
       <div className="flex min-h-screen flex-col">
-        {/* Header with cart button */}
+        {/* Header with logo/name and cart button */}
         <header className={cn('sticky top-0 z-50 min-h-[72px] flex items-center border-b', theme.colors.background, theme.colors.border)}>
           <div className="relative flex w-full items-center justify-between px-4 py-4">
+            {/* Logo and restaurant name on the left */}
+            <div className="flex items-center gap-3">
+              {config.logo ? (
+                <a href="#top" className="flex items-center gap-3">
+                  <Image
+                    src={config.logo}
+                    alt={config.name}
+                    width={40}
+                    height={40}
+                    className="rounded"
+                  />
+                  <span className={cn('text-lg font-semibold', theme.colors.text, theme.typography.heading)}>
+                    {config.name}
+                  </span>
+                </a>
+              ) : (
+                <a href="#top" className={cn('text-lg font-semibold', theme.colors.text, theme.typography.heading)}>
+                  {config.name}
+                </a>
+              )}
+            </div>
             {/* Cart Button on the far right - positioned at absolute right edge */}
             <div className="absolute right-0 flex items-center pr-4">
               <OrderButton
