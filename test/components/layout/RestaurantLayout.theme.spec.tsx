@@ -81,6 +81,34 @@ describe('RestaurantLayout Theme Usage', () => {
       const footer = container.querySelector('footer');
       expect(footer?.className).toContain('bg-');
     });
+
+    it(`should use theme colors in header border with ${themeKey} theme`, () => {
+      const config = { ...mockConfig, theme: themeKey };
+      const { container } = render(
+        <CartProvider>
+          <RestaurantLayout config={config}>
+            <div>Test Content</div>
+          </RestaurantLayout>
+        </CartProvider>
+      );
+
+      const header = container.querySelector('header');
+      expect(header?.className).toContain('border-');
+    });
+
+    it(`should use theme text colors in footer with ${themeKey} theme`, () => {
+      const config = { ...mockConfig, theme: themeKey };
+      const { container } = render(
+        <CartProvider>
+          <RestaurantLayout config={config}>
+            <div>Test Content</div>
+          </RestaurantLayout>
+        </CartProvider>
+      );
+
+      const footerText = container.querySelector('footer p');
+      expect(footerText?.className).toContain('text-');
+    });
   });
 });
 
