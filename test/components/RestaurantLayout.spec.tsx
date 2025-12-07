@@ -61,7 +61,7 @@ describe('RestaurantLayout', () => {
       </CartProvider>
     );
     
-    const logo = screen.getByAltText('Test Restaurant logo');
+    const logo = screen.getByAltText('Test Restaurant');
     expect(logo).toBeInTheDocument();
     // Next.js Image transforms the src URL (URL-encodes it), so we check it contains the encoded version
     expect(logo.getAttribute('src')).toContain('example.com');
