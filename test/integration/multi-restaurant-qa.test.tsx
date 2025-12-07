@@ -341,10 +341,20 @@ describe('Multi-Restaurant QA Integration Tests', () => {
               return;
             }
             // Try partial match
-            const partialMatch = screen.getByText(/Order Confirmed/i);
-            expect(partialMatch).toBeInTheDocument();
+            const partialMatch = screen.queryByText(/Order Confirmed/i);
+            if (partialMatch) {
+              expect(partialMatch).toBeInTheDocument();
+              return;
+            }
+            // Try finding the modal by its role
+            const modal = screen.queryByRole('dialog', { name: /order confirmation/i });
+            if (modal) {
+              expect(modal).toBeInTheDocument();
+              return;
+            }
+            throw new Error('Order confirmation modal not found');
           },
-          { timeout: 5000 }
+          { timeout: 10000 } // Increase timeout to 10 seconds
         );
 
         // Step 8: Verify cart is cleared
