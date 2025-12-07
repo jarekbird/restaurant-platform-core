@@ -1,6 +1,7 @@
 import { loadRestaurant } from '@/lib/loaders/restaurant';
 import { RestaurantLayout } from '@/components/layout/RestaurantLayout';
 import { HeroSection } from '@/components/restaurant/HeroSection';
+import { SeoContentBlock } from '@/components/restaurant/SeoContentBlock';
 import { VipSignupBanner } from '@/components/restaurant/VipSignupBanner';
 import { MenuSectionList } from '@/components/menu/MenuSectionList';
 import { AboutSection } from '@/components/restaurant/AboutSection';
@@ -72,6 +73,7 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
             <CartProvider>
               <RestaurantLayout config={config}>
                 <HeroSection config={config} />
+                <SeoContentBlock config={config} />
                 <VipSignupBanner />
                 <MenuSectionList menu={menu} />
                 <AboutSection config={config} />
