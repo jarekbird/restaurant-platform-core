@@ -78,7 +78,13 @@ describe('MenuItemCard', () => {
       ],
     });
 
-    render(<MenuItemCard item={itemWithModifiers} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={itemWithModifiers} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(
       screen.getByText('Customization options available')
     ).toBeInTheDocument();
@@ -86,9 +92,13 @@ describe('MenuItemCard', () => {
 
   it('should accept and apply className prop', () => {
     const { container } = render(
-      <MenuItemCard item={mockItem} className="custom-class" />
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} className="custom-class" />
+        </RestaurantThemeProvider>
+      </CartProvider>
     );
-    const card = container.querySelector('div');
+    const card = container.querySelector('div[class*="rounded-lg"]');
     expect(card).toHaveClass('custom-class');
   });
 
@@ -99,7 +109,13 @@ describe('MenuItemCard', () => {
       price: 2.99,
     });
 
-    render(<MenuItemCard item={itemWithoutDesc} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={itemWithoutDesc} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Water')).toBeInTheDocument();
     expect(screen.getByText('$2.99')).toBeInTheDocument();
   });
@@ -112,7 +128,13 @@ describe('MenuItemCard', () => {
       price: 14.99,
     });
 
-    render(<MenuItemCard item={itemWithoutTags} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={itemWithoutTags} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Pasta')).toBeInTheDocument();
     expect(screen.queryByText('vegetarian')).not.toBeInTheDocument();
   });

@@ -105,7 +105,11 @@ describe('MenuCategory', () => {
 
   it('should accept and apply className prop', () => {
     const { container } = render(
-      <MenuCategory category={mockCategory} className="custom-class" />
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={mockCategory} className="custom-class" />
+        </RestaurantThemeProvider>
+      </CartProvider>
     );
     const section = container.querySelector('section');
     expect(section).toHaveClass('custom-class');
@@ -124,7 +128,13 @@ describe('MenuCategory', () => {
       ],
     });
 
-    render(<MenuCategory category={categoryWithoutDesc} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={categoryWithoutDesc} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Main Courses')).toBeInTheDocument();
     expect(screen.getByText('Pizza')).toBeInTheDocument();
   });
@@ -142,7 +152,13 @@ describe('MenuCategory', () => {
       ],
     });
 
-    render(<MenuCategory category={simpleCategory} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={simpleCategory} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Water')).toBeInTheDocument();
     expect(screen.getByText('$2.99')).toBeInTheDocument();
   });

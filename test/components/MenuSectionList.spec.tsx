@@ -108,9 +108,13 @@ describe('MenuSectionList', () => {
 
   it('should accept and apply className prop', () => {
     const { container } = render(
-      <MenuSectionList menu={mockMenu} className="custom-class" />
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuSectionList menu={mockMenu} className="custom-class" />
+        </RestaurantThemeProvider>
+      </CartProvider>
     );
-    const wrapper = container.querySelector('div');
+    const wrapper = container.querySelector('div[class*="container"]');
     expect(wrapper).toHaveClass('custom-class');
   });
 
@@ -133,7 +137,13 @@ describe('MenuSectionList', () => {
       ],
     });
 
-    render(<MenuSectionList menu={singleCategoryMenu} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuSectionList menu={singleCategoryMenu} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Drinks')).toBeInTheDocument();
     const waterItems = screen.getAllByText('Water');
     expect(waterItems.length).toBeGreaterThan(0);
