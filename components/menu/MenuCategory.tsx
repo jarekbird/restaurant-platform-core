@@ -1,5 +1,8 @@
+'use client';
+
 import { MenuCategory as MenuCategoryType } from '@/lib/schemas/menu';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 interface MenuCategoryProps {
   category: MenuCategoryType;
@@ -9,15 +12,19 @@ interface MenuCategoryProps {
 /**
  * MenuCategory component
  * Renders a single menu category with its name, description, and items
- * Styling is generic and themeable via className prop
+ * Styling is generic and themeable via theme tokens
  */
 export function MenuCategory({ category, className }: MenuCategoryProps) {
+  const theme = useTheme();
+  
   return (
     <section className={cn('mb-8', className)}>
       <div className="mb-4">
-        <h2 className="text-2xl font-bold">{category.name}</h2>
+        <h2 className={cn('text-2xl font-bold', theme.colors.text, theme.typography.heading)}>
+          {category.name}
+        </h2>
         {category.description && (
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <p className={cn('mt-2', theme.colors.textMuted, theme.typography.body)}>
             {category.description}
           </p>
         )}
@@ -26,13 +33,15 @@ export function MenuCategory({ category, className }: MenuCategoryProps) {
         {category.items.map((item) => (
           <div
             key={item.id}
-            className="border-b border-gray-200 pb-4 last:border-b-0 dark:border-gray-800"
+            className={cn('border-b pb-4 last:border-b-0', theme.colors.border)}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold">{item.name}</h3>
+                <h3 className={cn('text-lg font-semibold', theme.colors.text, theme.typography.heading)}>
+                  {item.name}
+                </h3>
                 {item.description && (
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  <p className={cn('mt-1 text-sm', theme.colors.textMuted, theme.typography.body)}>
                     {item.description}
                   </p>
                 )}
@@ -41,7 +50,7 @@ export function MenuCategory({ category, className }: MenuCategoryProps) {
                     {item.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                        className={cn('rounded-full px-2 py-1 text-xs', theme.colors.secondary, theme.colors.text)}
                       >
                         {tag}
                       </span>
@@ -50,7 +59,7 @@ export function MenuCategory({ category, className }: MenuCategoryProps) {
                 )}
               </div>
               <div className="ml-4 text-right">
-                <span className="text-lg font-semibold">
+                <span className={cn('text-lg font-semibold', theme.colors.text)}>
                   ${item.price.toFixed(2)}
                 </span>
               </div>

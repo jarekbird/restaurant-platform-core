@@ -1,6 +1,9 @@
+'use client';
+
 import { Menu } from '@/lib/schemas/menu';
 import { MenuItemCard } from './MenuItemCard';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 interface MenuSectionListProps {
   menu: Menu;
@@ -12,14 +15,18 @@ interface MenuSectionListProps {
  * Accepts a Menu object and maps over categories rendering MenuCategory and MenuItemCard instances
  */
 export function MenuSectionList({ menu, className }: MenuSectionListProps) {
+  const theme = useTheme();
+  
   return (
     <div className={cn('container mx-auto px-4 py-12 space-y-12', className)}>
       {menu.categories.map((category) => (
         <section key={category.id} className="mb-8">
           <div className="mb-4">
-            <h2 className="text-2xl font-bold">{category.name}</h2>
+            <h2 className={cn('text-2xl font-bold', theme.colors.text, theme.typography.heading)}>
+              {category.name}
+            </h2>
             {category.description && (
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
+              <p className={cn('mt-2', theme.colors.textMuted, theme.typography.body)}>
                 {category.description}
               </p>
             )}
