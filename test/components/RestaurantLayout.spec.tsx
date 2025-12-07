@@ -109,8 +109,12 @@ describe('RestaurantLayout', () => {
     const header = screen.getByText('Test Restaurant').closest('header');
     expect(header).toBeInTheDocument();
     
-    // Check Order Online button is in the header
-    expect(screen.getByText('Order Online')).toBeInTheDocument();
+    // Check Order Online button is in the header - there may be multiple (header + mobile sticky bar)
+    const orderButtons = screen.getAllByRole('button', { name: /Order Online/i });
+    expect(orderButtons.length).toBeGreaterThanOrEqual(1);
+    // Verify at least one is in the header
+    const headerButton = Array.from(orderButtons).find(btn => header?.contains(btn));
+    expect(headerButton).toBeInTheDocument();
   });
 });
 
