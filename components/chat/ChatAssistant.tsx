@@ -57,100 +57,226 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
         content: msg.content,
       }));
       
-      // Call API
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: apiMessages,
-          menu,
-          cart,
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
+      // Call API with robust error handling
+      let response: Response;
+      try {
+        response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: apiMessages,
+            menu,
+            cart,
+          }),
+        });
+      } catch (fetchError) {
+        // Network error or fetch failed
+        console.error('Network error calling /api/chat:', fetchError);
+        const errorMessage: ChatMessageType = {
+          role: 'assistant',
+          content: 'I\'m having trouble connecting right now. Please check your internet connection and try again, or use the menu to add items to your cart.',
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+        toast.error('Connection error. Please try again.');
+        return;
       }
       
-      const data = await response.json();
+      // Handle HTTP error responses
+      if (!response.ok) {
+        let errorMessageText = 'I\'m temporarily unavailable. Please use the menu to add items to your cart.';
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            // Use server-provided error message if available
+            if (response.status === 503) {
+              errorMessageText = 'I\'m temporarily unavailable due to high demand. Please try again in a moment, or use the menu to add items to your cart.';
+            } else if (response.status === 500) {
+              errorMessageText = 'I encountered an error processing your request. Please try again, or use the menu to add items to your cart.';
+            } else {
+              errorMessageText = `I'm having trouble: ${errorData.error}. Please try again, or use the menu to add items to your cart.`;
+            }
+          }
+        } catch (parseError) {
+          // If we can't parse the error response, use default message
+          console.error('Error parsing error response:', parseError);
+        }
+        
+        const errorMessage: ChatMessageType = {
+          role: 'assistant',
+          content: errorMessageText,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+        toast.error('AI assistant is unavailable. Please use the menu.');
+        return;
+      }
+      
+      // Parse successful response
+      let data: { response_to_user?: string; message?: string; action?: unknown; timestamp?: string };
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('Error parsing API response:', parseError);
+        const errorMessage: ChatMessageType = {
+          role: 'assistant',
+          content: 'I received an invalid response. Please try again, or use the menu to add items to your cart.',
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+        toast.error('Invalid response from server. Please try again.');
+        return;
+      }
       
       // Extract response and action from JSON structure
-      const responseToUser = data.response_to_user || data.message || 'Sorry, I encountered an error. Please try again.';
+      const responseToUser = data.response_to_user || data.message || 'I\'m having trouble processing that. Please try again, or use the menu to add items to your cart.';
       const action = data.action;
       
-      // Execute cart action if found
-      if (action && action.type && (action.type === 'ADD_ITEM' || action.type === 'REMOVE_ITEM' || action.type === 'UPDATE_QUANTITY' || action.type === 'CHECKOUT')) {
-        try {
-          switch (action.type) {
-            case 'ADD_ITEM':
-              if (action.itemId) {
-                // Validate item exists in menu
+      // Execute cart action if found - with validation
+      if (action && typeof action === 'object' && action !== null && 'type' in action) {
+        const actionType = (action as { type: string }).type;
+        
+        if (actionType === 'ADD_ITEM' || actionType === 'REMOVE_ITEM' || actionType === 'UPDATE_QUANTITY' || actionType === 'CHECKOUT') {
+          try {
+            switch (actionType) {
+              case 'ADD_ITEM': {
+                const addAction = action as { itemId?: string; quantity?: number };
+                if (!addAction.itemId) {
+                  console.warn('ADD_ITEM action missing itemId');
+                  break;
+                }
+                
+                // Validate item exists in menu before adding
                 const menuItem = menu.categories
                   .flatMap((cat) => cat.items)
-                  .find((item) => item.id === action.itemId);
+                  .find((item) => item.id === addAction.itemId);
                 
                 if (!menuItem) {
-                  // Try to find by name as fallback
-                  const itemByName = menu.categories
-                    .flatMap((cat) => cat.items)
-                    .find((item) => 
-                      item.name.toLowerCase().includes(action.itemId.toLowerCase()) ||
-                      action.itemId.toLowerCase().includes(item.name.toLowerCase())
-                    );
-                  
-                  if (itemByName) {
-                    const quantity = action.quantity || 1;
-                    if (quantity > 0 && quantity <= 100) {
-                      for (let i = 0; i < quantity; i++) {
-                        cartContext.addItem({
-                          id: itemByName.id,
-                          name: itemByName.name,
-                          price: itemByName.price,
-                        });
-                      }
-                    }
+                  // Item not found in menu - don't add to cart
+                  console.warn(`Item with ID "${addAction.itemId}" not found in menu`);
+                  const errorMessage: ChatMessageType = {
+                    role: 'assistant',
+                    content: `I couldn't find that item in the menu. Please check the menu and try again, or tell me the name of the item you'd like to add.`,
+                    timestamp: new Date(),
+                  };
+                  setMessages((prev) => [...prev, errorMessage]);
+                  break;
+                }
+                
+                // Validate quantity
+                const quantity = addAction.quantity || 1;
+                if (quantity <= 0 || quantity > 100) {
+                  console.warn(`Invalid quantity: ${quantity}`);
+                  const errorMessage: ChatMessageType = {
+                    role: 'assistant',
+                    content: `I can only add between 1 and 100 items at a time. Please specify a valid quantity.`,
+                    timestamp: new Date(),
+                  };
+                  setMessages((prev) => [...prev, errorMessage]);
+                  break;
+                }
+                
+                // Add item to cart
+                try {
+                  for (let i = 0; i < quantity; i++) {
+                    cartContext.addItem({
+                      id: menuItem.id,
+                      name: menuItem.name,
+                      price: menuItem.price,
+                    });
                   }
-                } else {
-                  const quantity = action.quantity || 1;
-                  if (quantity > 0 && quantity <= 100) {
-                    for (let i = 0; i < quantity; i++) {
-                      cartContext.addItem({
-                        id: menuItem.id,
-                        name: menuItem.name,
-                        price: menuItem.price,
-                      });
-                    }
+                } catch (cartError) {
+                  console.error('Error adding item to cart:', cartError);
+                  toast.error('Failed to add item to cart');
+                }
+                break;
+              }
+              case 'REMOVE_ITEM': {
+                const removeAction = action as { itemId?: string };
+                if (!removeAction.itemId) {
+                  console.warn('REMOVE_ITEM action missing itemId');
+                  break;
+                }
+                
+                // Validate item exists in cart before removing
+                const itemToRemove = cart.find((item) => item.id === removeAction.itemId);
+                if (!itemToRemove) {
+                  console.warn(`Item with ID "${removeAction.itemId}" not found in cart`);
+                  const errorMessage: ChatMessageType = {
+                    role: 'assistant',
+                    content: `I couldn't find that item in your cart. Please check your cart and try again.`,
+                    timestamp: new Date(),
+                  };
+                  setMessages((prev) => [...prev, errorMessage]);
+                  break;
+                }
+                
+                try {
+                  cartContext.removeItem(removeAction.itemId);
+                } catch (cartError) {
+                  console.error('Error removing item from cart:', cartError);
+                  toast.error('Failed to remove item from cart');
+                }
+                break;
+              }
+              case 'UPDATE_QUANTITY': {
+                const updateAction = action as { itemId?: string; quantity?: number };
+                if (!updateAction.itemId || updateAction.quantity === undefined) {
+                  console.warn('UPDATE_QUANTITY action missing itemId or quantity');
+                  break;
+                }
+                
+                // Validate item exists in cart
+                const itemToUpdate = cart.find((item) => item.id === updateAction.itemId);
+                if (!itemToUpdate) {
+                  console.warn(`Item with ID "${updateAction.itemId}" not found in cart`);
+                  const errorMessage: ChatMessageType = {
+                    role: 'assistant',
+                    content: `I couldn't find that item in your cart. Please check your cart and try again.`,
+                    timestamp: new Date(),
+                  };
+                  setMessages((prev) => [...prev, errorMessage]);
+                  break;
+                }
+                
+                // Validate quantity
+                if (updateAction.quantity <= 0 || updateAction.quantity > 100) {
+                  console.warn(`Invalid quantity: ${updateAction.quantity}`);
+                  const errorMessage: ChatMessageType = {
+                    role: 'assistant',
+                    content: `I can only set quantities between 1 and 100. Please specify a valid quantity.`,
+                    timestamp: new Date(),
+                  };
+                  setMessages((prev) => [...prev, errorMessage]);
+                  break;
+                }
+                
+                try {
+                  cartContext.updateQuantity(updateAction.itemId, updateAction.quantity);
+                } catch (cartError) {
+                  console.error('Error updating item quantity:', cartError);
+                  toast.error('Failed to update item quantity');
+                }
+                break;
+              }
+              case 'CHECKOUT':
+                if (cart.length > 0 && onCartAction) {
+                  try {
+                    onCartAction('Opening checkout');
+                  } catch (checkoutError) {
+                    console.error('Error opening checkout:', checkoutError);
+                    toast.error('Failed to open checkout');
                   }
                 }
-              }
-              break;
-            case 'REMOVE_ITEM':
-              if (action.itemId) {
-                const itemToRemove = cart.find((item) => item.id === action.itemId);
-                if (itemToRemove) {
-                  cartContext.removeItem(action.itemId);
-                }
-              }
-              break;
-            case 'UPDATE_QUANTITY':
-              if (action.itemId && action.quantity !== undefined) {
-                const itemToUpdate = cart.find((item) => item.id === action.itemId);
-                if (itemToUpdate && action.quantity > 0 && action.quantity <= 100) {
-                  cartContext.updateQuantity(action.itemId, action.quantity);
-                }
-              }
-              break;
-            case 'CHECKOUT':
-              if (cart.length > 0 && onCartAction) {
-                onCartAction('Opening checkout');
-              }
-              break;
+                break;
+            }
+          } catch (error) {
+            console.error('Error executing cart action:', error);
+            toast.error('Failed to process cart action');
           }
-        } catch (error) {
-          console.error('Error executing cart action:', error);
-          toast.error('Failed to process cart action');
         }
       }
       
@@ -159,22 +285,23 @@ export function ChatAssistant({ menu, cart, onCartAction, className }: ChatAssis
       const assistantMessage: ChatMessageType = {
         role: 'assistant',
         content: responseToUser,
-        timestamp: new Date(data.timestamp),
+        timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error calling chat API:', error);
+      // Catch-all for any unexpected errors
+      console.error('Unexpected error in chat:', error);
       
-      // Add error message
+      // Add friendly error message
       const errorMessage: ChatMessageType = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: 'I encountered an unexpected error. Please try again, or use the menu to add items to your cart.',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
       
       // Show error toast
-      toast.error('Failed to get AI response. Please try again.');
+      toast.error('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

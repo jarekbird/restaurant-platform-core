@@ -53,17 +53,18 @@ The cart system provides shopping cart functionality for online ordering. It con
 ### Core Components
 
 1. **`useCart` Hook** (`components/order/useCart.ts`):
-   - Manages cart state using React hooks
+   - Manages cart state using React hooks (`useState`, `useEffect`, `useCallback`)
    - Provides operations: `addItem`, `removeItem`, `updateQuantity`, `clearCart`
-   - Calculates `total` and `itemCount` automatically
+   - Calculates `total` and `itemCount` automatically via computed values
    - Persists cart state to `localStorage` for persistence across page reloads
-   - Handles hydration to avoid server/client mismatches
+   - Handles hydration to avoid server/client mismatches (starts with empty cart, hydrates after mount)
 
 2. **`CartProvider`** (`components/order/CartProvider.tsx`):
    - React Context provider that wraps the `useCart` hook
    - Makes cart state available to all child components via `useCartContext()`
    - Integrates with toast notifications for user feedback
    - Wraps cart operations with toast notifications (add, remove, clear)
+   - Provides type-safe cart context interface (`CartContextValue`)
 
 3. **Cart UI Components**:
    - **`CartDrawer`**: Slide-out drawer showing cart items, quantities, and checkout
@@ -71,19 +72,78 @@ The cart system provides shopping cart functionality for online ordering. It con
    - **`CheckoutForm`**: Form for customer information (name, phone, notes)
    - **`OrderConfirmationModal`**: Modal shown after successful order placement
 
+### Cart Operations
+
+#### Add Item Operation (`addItem`)
+- **Input**: `Omit<CartItem, 'quantity'>` (item without quantity)
+- **Behavior**: 
+  - Checks if item already exists (same ID and modifiers)
+  - If exists: increments quantity by 1
+  - If new: adds item with quantity 1
+  - Uses deep comparison of modifiers via JSON.stringify
+- **Persistence**: Automatically saves to `localStorage` after state update
+- **Side Effects**: Triggers toast notification via `CartProvider` wrapper
+
+#### Remove Item Operation (`removeItem`)
+- **Input**: `itemId: string`
+- **Behavior**: Filters out item with matching ID from cart array
+- **Persistence**: Automatically saves to `localStorage` after state update
+- **Side Effects**: Triggers toast notification via `CartProvider` wrapper
+
+#### Update Quantity Operation (`updateQuantity`)
+- **Input**: `itemId: string`, `quantity: number`
+- **Behavior**: 
+  - If quantity <= 0: calls `removeItem` instead
+  - Otherwise: updates quantity for matching item ID
+  - Uses `map` to create new array with updated item
+- **Persistence**: Automatically saves to `localStorage` after state update
+- **Side Effects**: No toast notification (quantity changes are less prominent)
+
+#### Clear Cart Operation (`clearCart`)
+- **Input**: None
+- **Behavior**: 
+  - Sets cart items to empty array
+  - Explicitly removes `restaurant-cart` key from `localStorage`
+- **Persistence**: Clears `localStorage` entry
+- **Side Effects**: Triggers toast notification via `CartProvider` wrapper
+
+### Persistence Mechanism
+
+The cart uses `localStorage` for client-side persistence:
+
+- **Storage Key**: `restaurant-cart` (constant `CART_STORAGE_KEY`)
+- **Storage Format**: JSON stringified array of `CartItem` objects
+- **Hydration Strategy**:
+  1. Component starts with empty cart array (server/client match)
+  2. After mount, `useEffect` loads from `localStorage` (client-side only)
+  3. If stored items exist, updates state with `setItems`
+  4. Sets `isHydrated` flag to prevent premature saves
+- **Save Strategy**:
+  1. `useEffect` watches `items` and `isHydrated` dependencies
+  2. Only saves after hydration is complete
+  3. Saves on every cart state change
+  4. Wrapped in try-catch for error handling
+- **Error Handling**: 
+  - Catches `localStorage` errors (quota exceeded, disabled, etc.)
+  - Logs errors to console
+  - Gracefully degrades (cart still works, just no persistence)
+
 ### State Management
 
-- Cart state is managed at the provider level using React Context
-- State is persisted to `localStorage` with key `restaurant-cart`
-- Cart operations are wrapped to provide toast notifications
-- Cart state is shared across all components within `CartProvider`
+- **State Location**: React Context (`CartContext`) provided by `CartProvider`
+- **State Shape**: `CartItem[]` array with computed `total` and `itemCount`
+- **State Updates**: Immutable updates using spread operators and array methods
+- **State Sharing**: All components within `CartProvider` tree access same cart state
+- **State Persistence**: `localStorage` with key `restaurant-cart`
+- **State Synchronization**: Automatic save on every state change (after hydration)
 
 ### Integration Points
 
-- **Preview Route**: `CartProvider` wraps the preview page layout
+- **Preview Route**: `CartProvider` wraps the preview page layout (`app/preview/[slug]/page.tsx`)
 - **RestaurantLayout**: Manages cart drawer open/close state and order placement
-- **MenuItemCard**: "Add to Cart" button calls `addItem` from context
-- **ChatAssistant**: Can add/remove items via AI commands
+- **MenuItemCard**: "Add to Cart" button calls `addItem` from `useCartContext()`
+- **ChatAssistant**: Can add/remove items via AI commands using `useCartContext()`
+- **CartDrawer**: Displays cart items and allows quantity updates via `useCartContext()`
 
 ## AI Chat System Architecture
 
@@ -92,80 +152,256 @@ The AI chat system provides conversational ordering assistance powered by OpenAI
 ### Core Components
 
 1. **`ChatAssistant`** (`components/chat/ChatAssistant.tsx`):
-   - Main chat UI component with collapsible panel
-   - Manages chat message history
-   - Handles user input and sends to `/api/chat` endpoint
-   - Parses AI responses to extract cart actions
-   - Executes cart actions (add, remove, update quantity, checkout)
+   - Main chat UI component with collapsible panel (desktop: sidebar, mobile: bottom drawer)
+   - Manages chat message history in component state (`useState`)
+   - Handles user input and sends to `/api/chat` endpoint via `fetch`
+   - Receives JSON responses with `response_to_user` and `action` fields
+   - Executes cart actions directly via `useCartContext()` (no separate parser needed)
    - Shows conversation starter buttons for common actions
+   - Handles loading states and error messages
+   - Validates actions before execution (item exists in menu/cart, valid quantities)
 
 2. **`ChatMessage`** (`components/chat/ChatMessage.tsx`):
    - Displays individual chat messages (user/assistant)
    - Shows timestamps and message content
+   - Different styling for user vs assistant messages
 
 3. **`ChatInput`** (`components/chat/ChatInput.tsx`):
    - Input field for user messages
    - Submit button to send messages
+   - Disabled state during loading
 
 ### AI Service Layer
 
 1. **`buildSystemPrompt`** (`lib/ai/chatService.ts`):
-   - Generates system prompt for LLM based on:
-     - Restaurant menu structure
-     - Current cart contents
-     - Available actions (ADD_ITEM, REMOVE_ITEM, UPDATE_QUANTITY, SHOW_CART, CHECKOUT)
-   - Provides context about menu items, prices, and cart state
+   - Generates comprehensive system prompt for LLM
+   - **Menu Context**: Formats all menu items with IDs, names, prices, descriptions
+   - **Cart Context**: Formats current cart items with quantities and totals
+   - **Instructions**: 
+     - Defines available action types (ADD_ITEM, REMOVE_ITEM, UPDATE_QUANTITY, SHOW_CART, CHECKOUT, ANSWER_QUESTION)
+     - Specifies required JSON response format: `{ response_to_user: string, action: { type, itemId?, quantity? } | null }`
+     - Instructs LLM to include updated cart totals in responses
+     - Provides examples and error handling guidance
+   - **Dynamic Updates**: Prompt regenerated on each request with current menu and cart state
 
 2. **`sendChatMessage`** (`lib/ai/chatService.ts`):
-   - Makes API call to OpenAI GPT-4o-mini model
-   - Sends system prompt + message history
-   - Returns AI response as string
-   - Handles errors (API key issues, rate limits, network errors)
+   - **Client Initialization**: `getOpenAIClient()` reads `OPENAI_API_KEY` from environment
+   - **API Call**: Uses OpenAI SDK to call `chat.completions.create()`
+   - **Model Configuration**:
+     - Model: `OPENAI_MODEL` env var or defaults to `gpt-4o-mini`
+     - Temperature: 0.7 (balanced creativity/consistency)
+     - Max tokens: 500 (sufficient for responses)
+     - Response format: `json_object` (ensures JSON output)
+   - **Message Formatting**:
+     - Converts `ChatMessage[]` to OpenAI format
+     - Adds system prompt as first message
+     - Filters out system messages from history
+     - Validates message content
+   - **Response Parsing**:
+     - Parses JSON response from LLM
+     - Validates structure (requires `response_to_user` string)
+     - Returns `LLMChatResponse` with `response_to_user` and optional `action`
+   - **Error Handling**:
+     - Missing API key: Returns fallback response (no error thrown)
+     - Invalid messages: Throws validation error
+     - API errors: Catches and throws with descriptive messages
+     - Parse errors: Falls back to raw content as `response_to_user`
+     - Rate limits: Detects and throws specific error message
 
 3. **`actionParser`** (`lib/ai/actionParser.ts`):
-   - Parses AI JSON responses into structured `ChatAction` objects
-   - Validates action types and parameters
+   - **Note**: This parser is legacy code. The current implementation uses JSON responses from LLM directly.
+   - Parses text responses into structured `ChatAction` objects (fallback for non-JSON responses)
+   - Uses regex patterns to extract action types and item IDs
+   - Fuzzy matches item names to find menu items
    - Handles malformed responses gracefully
-   - Returns action objects: `{ type, itemId?, quantity?, content? }`
+   - Returns action objects: `{ type, itemId?, quantity?, message }`
 
 ### API Route
 
 **`/api/chat`** (`app/api/chat/route.ts`):
-- Next.js API route handler
-- Receives POST requests with `{ messages, menu, cart }`
-- Calls `sendChatMessage` with context
-- Returns `{ message, action }` response
-- Handles errors and returns appropriate status codes
+- **Route**: POST `/api/chat`
+- **Request Body**:
+  ```typescript
+  {
+    messages: ChatMessage[],
+    menu: Menu,
+    cart: CartItem[]
+  }
+  ```
+- **Validation**:
+  - Validates `messages` array exists and is array
+  - Validates `menu` exists and parses with `menuSchema`
+  - Validates `cart` array exists and is array
+  - Validates message format (role, content)
+  - Validates cart item format (id, name, price, quantity)
+- **Processing**:
+  1. Parses and validates request body
+  2. Calls `sendChatMessage(messages, menu, cart)`
+  3. Returns JSON response with `response_to_user` and `action`
+- **Response Format**:
+  ```typescript
+  {
+    response_to_user: string,
+    action: { type, itemId?, quantity? } | null,
+    timestamp: string
+  }
+  ```
+- **Error Handling**:
+  - 400: Invalid request body or validation errors
+  - 500: AI service configuration errors
+  - 503: AI service temporarily unavailable (rate limits)
+  - All errors return user-friendly messages in `response_to_user` field
+
+### LLM Integration Approach
+
+The system uses OpenAI's GPT models with a structured JSON response format:
+
+1. **Prompt Engineering**:
+   - System prompt includes full menu and cart context
+   - Explicit instructions for JSON response format
+   - Examples of correct action formats
+   - Guidance on calculating cart totals
+
+2. **JSON Response Format**:
+   - LLM configured with `response_format: { type: 'json_object' }`
+   - Required structure: `{ response_to_user: string, action: { type, itemId?, quantity? } | null }`
+   - LLM calculates and includes updated cart totals in `response_to_user`
+
+3. **Error Resilience**:
+   - If JSON parsing fails, falls back to raw content
+   - If API key missing, returns fallback response (no crash)
+   - Network errors handled with user-friendly messages
+   - Rate limit errors return 503 status
+
+4. **Context Management**:
+   - Full conversation history sent to LLM
+   - Menu and cart state included in every request
+   - System prompt regenerated with current state
 
 ### Action Extraction and Integration
 
-1. **Action Types**:
-   - `ADD_ITEM`: Add item to cart (requires `itemId`, optional `quantity`)
-   - `REMOVE_ITEM`: Remove item from cart (requires `itemId`)
-   - `UPDATE_QUANTITY`: Update item quantity (requires `itemId`, `quantity`)
-   - `SHOW_CART`: Display current cart contents
-   - `CHECKOUT`: Open checkout form
+#### Action Types
 
-2. **Integration Flow**:
-   - User sends message → `/api/chat` → OpenAI API → Response
-   - Response parsed by `actionParser` → `ChatAction` object
-   - `ChatAssistant` executes action via `useCartContext()`
-   - Cart state updates → UI updates (drawer, badge, toasts)
-   - Confirmation message added to chat history
+1. **`ADD_ITEM`**:
+   - **Required**: `itemId` (string)
+   - **Optional**: `quantity` (number, defaults to 1)
+   - **Behavior**: Adds item to cart via `cartContext.addItem()`
+   - **Validation**: 
+     - Item must exist in menu
+     - Quantity must be 1-100
+     - If item already in cart, increments quantity
+
+2. **`REMOVE_ITEM`**:
+   - **Required**: `itemId` (string)
+   - **Behavior**: Removes item from cart via `cartContext.removeItem()`
+   - **Validation**: Item must exist in cart
+
+3. **`UPDATE_QUANTITY`**:
+   - **Required**: `itemId` (string), `quantity` (number)
+   - **Behavior**: Updates item quantity via `cartContext.updateQuantity()`
+   - **Validation**: 
+     - Item must exist in cart
+     - Quantity must be 1-100
+
+4. **`SHOW_CART`**:
+   - **Required**: None
+   - **Behavior**: Opens cart drawer (via `onCartAction` callback)
+
+5. **`CHECKOUT`**:
+   - **Required**: None
+   - **Behavior**: Opens checkout form (via `onCartAction` callback)
+   - **Validation**: Cart must not be empty
+
+6. **`ANSWER_QUESTION`**:
+   - **Required**: None
+   - **Behavior**: No cart action, just displays response
+
+#### Integration Flow
+
+1. **User Input**: User types message in `ChatInput`
+2. **API Request**: `ChatAssistant` sends POST to `/api/chat` with:
+   - Message history (all previous messages)
+   - Current menu data
+   - Current cart state
+3. **LLM Processing**: 
+   - API route calls `sendChatMessage()`
+   - System prompt built with menu and cart context
+   - OpenAI API called with conversation history
+   - LLM returns JSON with `response_to_user` and `action`
+4. **Action Execution**:
+   - `ChatAssistant` receives response with `action` field
+   - Validates action (item exists, valid quantity, etc.)
+   - Executes action via `useCartContext()`:
+     - `ADD_ITEM`: Calls `cartContext.addItem()` (may call multiple times for quantity > 1)
+     - `REMOVE_ITEM`: Calls `cartContext.removeItem()`
+     - `UPDATE_QUANTITY`: Calls `cartContext.updateQuantity()`
+     - `CHECKOUT`: Calls `onCartAction('Opening checkout')`
+   - Cart state updates trigger UI updates (drawer, badge, toasts)
+5. **Response Display**: 
+   - `response_to_user` displayed as assistant message
+   - Message added to chat history
+   - Loading state cleared
+
+#### Integration Points
+
+- **Cart Context**: `ChatAssistant` uses `useCartContext()` to access cart operations
+- **Menu Data**: Menu passed as prop from server component (loaded from filesystem)
+- **Cart State**: Cart state passed as prop (from `CartProvider` context)
+- **Error Handling**: All errors return user-friendly messages, no crashes
+- **Validation**: Actions validated before execution (item exists, valid quantities)
 
 ### State Management
 
-- Chat messages stored in component state (`useState`)
-- Cart state accessed via `useCartContext()` hook
-- Menu data passed as prop from server component
-- No global chat state (each chat instance is independent)
+- **Chat Messages**: Stored in component state (`useState<ChatMessageType[]>`)
+- **Loading State**: Component-level `isLoading` state for UI feedback
+- **Cart State**: Accessed via `useCartContext()` hook (from `CartProvider`)
+- **Menu Data**: Passed as prop from server component (static, doesn't change)
+- **No Global Chat State**: Each `ChatAssistant` instance is independent
+- **Message History**: Maintained in component state, sent with each API request
 
 ### API Key Handling
 
-- OpenAI API key stored in `OPENAI_API_KEY` environment variable
-- Model selection via `OPENAI_MODEL` (defaults to `gpt-4o-mini`)
-- API key validation in `sendChatMessage`
-- Error handling for missing/invalid keys
+#### Environment Variables
+
+- **`OPENAI_API_KEY`**: Required for LLM functionality
+  - Read from `process.env.OPENAI_API_KEY` (server-side only)
+  - Validated in `getOpenAIClient()` function
+  - If missing: Returns `null` client, `sendChatMessage()` returns fallback response
+  - Never exposed to client-side code
+
+- **`OPENAI_MODEL`**: Optional, defaults to `gpt-4o-mini`
+  - Read from `process.env.OPENAI_MODEL`
+  - Used in `chat.completions.create()` call
+  - Can be changed to use different OpenAI models
+
+#### Security Practices
+
+1. **Server-Side Only**: API key only accessed in server-side code (`lib/ai/chatService.ts`, `/api/chat` route)
+2. **No Client Exposure**: API key never sent to client or exposed in client-side code
+3. **Error Handling**: Missing key handled gracefully (fallback response, no crash)
+4. **Validation**: API key validated before making API calls
+5. **Error Messages**: Generic error messages for configuration issues (no key details leaked)
+
+#### Error Handling
+
+- **Missing API Key**: 
+  - `getOpenAIClient()` returns `null`
+  - `sendChatMessage()` returns fallback response
+  - User sees: "AI assistant is currently unavailable. Please use the menu to add items to your cart."
+  
+- **Invalid API Key**:
+  - OpenAI API returns error
+  - Caught and re-thrown as "AI service configuration error"
+  - API route returns 500 with user-friendly message
+
+- **Rate Limits**:
+  - Detected in error message
+  - Re-thrown as "AI service is temporarily unavailable due to high demand"
+  - API route returns 503 status
+
+- **Network Errors**:
+  - Caught in `ChatAssistant` fetch call
+  - User sees: "I'm having trouble connecting right now. Please check your internet connection and try again."
 
 ## Theme System
 
