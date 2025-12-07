@@ -13,6 +13,7 @@
           "name": "Edamame",
           "description": "Steamed soybeans with sea salt",
           "price": 6.99,
+          "image": "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=800",
           "tags": ["vegetarian", "healthy"]
         },
         {
@@ -20,6 +21,7 @@
           "name": "Pork Gyoza",
           "description": "Pan-fried pork dumplings with soy dipping sauce",
           "price": 8.99,
+          "image": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800",
           "tags": ["popular"]
         }
       ]
@@ -34,6 +36,7 @@
           "name": "California Roll",
           "description": "Crab, avocado, and cucumber",
           "price": 9.99,
+          "image": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800",
           "tags": ["popular", "vegetarian-friendly"],
           "modifiers": [
             {
@@ -58,6 +61,7 @@
           "name": "Spicy Tuna Roll",
           "description": "Fresh tuna with spicy mayo",
           "price": 11.99,
+          "image": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800",
           "tags": ["spicy"],
           "modifiers": [
             {

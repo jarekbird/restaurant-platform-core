@@ -18,5 +18,7 @@
   },
   "cuisine": "American",
   "theme": "warm-pizza",
+  "heroImage": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200",
+  "logo": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400",
   "orderOnlineEnabled": false
 }
