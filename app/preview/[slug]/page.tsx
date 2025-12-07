@@ -10,7 +10,9 @@ import { HoursAndLocation } from '@/components/restaurant/HoursAndLocation';
 import { CartProvider } from '@/components/order/CartProvider';
 import { ChatAssistantWrapper } from '@/components/chat/ChatAssistantWrapper';
 import { ToastProvider } from '@/components/ui/ToastProvider';
+import { buildRestaurantMetadata } from '@/lib/seo/restaurantMetadata';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 
 /**
  * PROTOTYPE-ONLY: This is a demo/preview application.
@@ -27,6 +29,23 @@ import { notFound } from 'next/navigation';
 
 interface PreviewPageProps {
   params: Promise<{ slug: string }>;
+}
+
+/**
+ * Generate metadata for preview page
+ */
+export async function generateMetadata({ params }: PreviewPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  
+  try {
+    const restaurant = loadRestaurant(slug);
+    return buildRestaurantMetadata(restaurant.config, 'home');
+  } catch {
+    return {
+      title: 'Restaurant Not Found',
+      description: 'The requested restaurant could not be found.',
+    };
+  }
 }
 
 /**
