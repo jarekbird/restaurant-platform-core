@@ -6,6 +6,8 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MenuCategory } from '@/components/menu/MenuCategory';
 import { menuCategorySchema } from '@/lib/schemas/menu';
+import { CartProvider } from '@/components/order/CartProvider';
+import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 
 describe('MenuCategory', () => {
   const mockCategory = menuCategorySchema.parse({
@@ -31,35 +33,71 @@ describe('MenuCategory', () => {
   });
 
   it('should render category name', () => {
-    render(<MenuCategory category={mockCategory} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={mockCategory} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Appetizers')).toBeInTheDocument();
   });
 
   it('should render category description when provided', () => {
-    render(<MenuCategory category={mockCategory} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={mockCategory} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Start your meal right')).toBeInTheDocument();
   });
 
   it('should render all menu items', () => {
-    render(<MenuCategory category={mockCategory} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={mockCategory} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Bruschetta')).toBeInTheDocument();
     expect(screen.getByText('Wings')).toBeInTheDocument();
   });
 
   it('should render item descriptions when provided', () => {
-    render(<MenuCategory category={mockCategory} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={mockCategory} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Toasted bread with tomatoes')).toBeInTheDocument();
     expect(screen.getByText('Spicy chicken wings')).toBeInTheDocument();
   });
 
   it('should render item prices', () => {
-    render(<MenuCategory category={mockCategory} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={mockCategory} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('$8.99')).toBeInTheDocument();
     expect(screen.getByText('$12.99')).toBeInTheDocument();
   });
 
   it('should render item tags when provided', () => {
-    render(<MenuCategory category={mockCategory} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuCategory category={mockCategory} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('vegetarian')).toBeInTheDocument();
     expect(screen.getByText('spicy')).toBeInTheDocument();
     expect(screen.getByText('popular')).toBeInTheDocument();

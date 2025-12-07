@@ -6,6 +6,8 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MenuItemCard } from '@/components/menu/MenuItemCard';
 import { menuItemSchema } from '@/lib/schemas/menu';
+import { CartProvider } from '@/components/order/CartProvider';
+import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 
 describe('MenuItemCard', () => {
   const mockItem = menuItemSchema.parse({
@@ -17,24 +19,48 @@ describe('MenuItemCard', () => {
   });
 
   it('should render item title', () => {
-    render(<MenuItemCard item={mockItem} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('Margherita Pizza')).toBeInTheDocument();
   });
 
   it('should render item description when provided', () => {
-    render(<MenuItemCard item={mockItem} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(
       screen.getByText('Classic pizza with tomato and mozzarella')
     ).toBeInTheDocument();
   });
 
   it('should render item price', () => {
-    render(<MenuItemCard item={mockItem} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('$12.99')).toBeInTheDocument();
   });
 
   it('should render tags when provided', () => {
-    render(<MenuItemCard item={mockItem} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(screen.getByText('vegetarian')).toBeInTheDocument();
     expect(screen.getByText('popular')).toBeInTheDocument();
   });
@@ -92,7 +118,13 @@ describe('MenuItemCard', () => {
   });
 
   it('should handle item without modifiers', () => {
-    render(<MenuItemCard item={mockItem} />);
+    render(
+      <CartProvider>
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
+      </CartProvider>
+    );
     expect(
       screen.queryByText('Customization options available')
     ).not.toBeInTheDocument();
