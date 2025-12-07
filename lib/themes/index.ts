@@ -93,6 +93,28 @@ export const themes: Record<string, Theme> = {
       badge: 'rounded-full',
     },
   },
+  'warm-pizza': {
+    name: 'Warm Pizza',
+    colors: {
+      primary: 'bg-orange-600 text-white',
+      secondary: 'bg-orange-700 text-white',
+      background: 'bg-orange-50 text-gray-900',
+      surface: 'bg-white text-gray-900',
+      accent: 'bg-red-500 text-white',
+      text: 'text-gray-900',
+      textMuted: 'text-gray-700',
+      border: 'border-orange-200',
+    },
+    typography: {
+      heading: 'font-bold',
+      body: 'font-normal',
+    },
+    radii: {
+      card: 'rounded-xl',
+      button: 'rounded-lg',
+      badge: 'rounded-full',
+    },
+  },
 };
 
 export type ThemeKey = keyof typeof themes;
