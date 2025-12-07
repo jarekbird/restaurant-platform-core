@@ -10,6 +10,7 @@ export interface Theme {
     secondary: string;
     background: string;
     surface: string;
+    accent: string;
     text: string;
     textMuted: string;
     border: string;
@@ -17,6 +18,11 @@ export interface Theme {
   typography: {
     heading: string;
     body: string;
+  };
+  radii?: {
+    card: string;
+    button: string;
+    badge: string;
   };
 }
 
@@ -28,6 +34,7 @@ export const themes: Record<string, Theme> = {
       secondary: 'bg-gray-900 text-white',
       background: 'bg-black text-white',
       surface: 'bg-gray-900 text-white',
+      accent: 'bg-gray-700 text-white', // Placeholder - will be updated in TASK-1.3.2
       text: 'text-white',
       textMuted: 'text-gray-400',
       border: 'border-gray-800',
@@ -44,6 +51,7 @@ export const themes: Record<string, Theme> = {
       secondary: 'bg-amber-800 text-white',
       background: 'bg-amber-50 text-gray-900',
       surface: 'bg-white text-gray-900',
+      accent: 'bg-amber-700 text-white', // Placeholder - will be updated in TASK-1.3.2
       text: 'text-gray-900',
       textMuted: 'text-gray-600',
       border: 'border-amber-200',
@@ -60,6 +68,7 @@ export const themes: Record<string, Theme> = {
       secondary: 'bg-red-500 text-white',
       background: 'bg-white text-gray-900',
       surface: 'bg-gray-50 text-gray-900',
+      accent: 'bg-red-400 text-white', // Placeholder - will be updated in TASK-1.3.2
       text: 'text-gray-900',
       textMuted: 'text-gray-600',
       border: 'border-gray-200',
