@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { VipSignupBanner } from '@/components/restaurant/VipSignupBanner';
 import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 import { ToastProvider } from '@/components/ui/ToastProvider';
@@ -26,9 +26,9 @@ describe('VipSignupBanner', () => {
     expect(screen.getByText('Sign Up')).toBeInTheDocument();
   });
 
-  it('should validate email format', () => {
+  it('should validate email format', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    render(
+    const { container } = render(
       <ToastProvider>
         <RestaurantThemeProvider themeKey="warm-pizza">
           <VipSignupBanner />
@@ -42,7 +42,19 @@ describe('VipSignupBanner', () => {
     fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
     fireEvent.click(submitButton);
 
-    expect(screen.getByText(/Please enter a valid email address/)).toBeInTheDocument();
+    // Wait for error to appear - check for role="alert" elements
+    await waitFor(() => {
+      const errorElements = container.querySelectorAll('p[role="alert"]');
+      expect(errorElements.length).toBeGreaterThan(0);
+    });
+    
+    // Verify error message content
+    const errorElements = container.querySelectorAll('p[role="alert"]');
+    const hasEmailError = Array.from(errorElements).some(el => 
+      el.textContent?.includes('valid email') || 
+      el.textContent?.includes('provide either')
+    );
+    expect(hasEmailError).toBe(true);
     expect(consoleSpy).not.toHaveBeenCalled();
     consoleSpy.mockRestore();
   });

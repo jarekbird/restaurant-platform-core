@@ -58,20 +58,40 @@ describe('ReviewHighlights', () => {
     expect(reviewCard?.className).toContain('bg-');
   });
 
-  it('should render with different theme keys', () => {
-    const themeKeys = ['sushi-dark', 'cafe-warm', 'modern-sushi'] as const;
+  it('should render with sushi-dark theme', () => {
+    const { container } = render(
+      <RestaurantThemeProvider themeKey="sushi-dark">
+        <ReviewHighlights />
+      </RestaurantThemeProvider>
+    );
 
-    themeKeys.forEach((themeKey) => {
-      const { container } = render(
-        <RestaurantThemeProvider themeKey={themeKey}>
-          <ReviewHighlights />
-        </RestaurantThemeProvider>
-      );
+    const section = container.querySelector('section');
+    expect(section).toBeInTheDocument();
+    expect(screen.getByText('4.8 / 5')).toBeInTheDocument();
+  });
 
-      const section = container.querySelector('section');
-      expect(section).toBeInTheDocument();
-      expect(screen.getByText('4.8 / 5')).toBeInTheDocument();
-    });
+  it('should render with cafe-warm theme', () => {
+    const { container } = render(
+      <RestaurantThemeProvider themeKey="cafe-warm">
+        <ReviewHighlights />
+      </RestaurantThemeProvider>
+    );
+
+    const section = container.querySelector('section');
+    expect(section).toBeInTheDocument();
+    expect(screen.getByText('4.8 / 5')).toBeInTheDocument();
+  });
+
+  it('should render with modern-sushi theme', () => {
+    const { container } = render(
+      <RestaurantThemeProvider themeKey="modern-sushi">
+        <ReviewHighlights />
+      </RestaurantThemeProvider>
+    );
+
+    const section = container.querySelector('section');
+    expect(section).toBeInTheDocument();
+    expect(screen.getByText('4.8 / 5')).toBeInTheDocument();
   });
 });
 

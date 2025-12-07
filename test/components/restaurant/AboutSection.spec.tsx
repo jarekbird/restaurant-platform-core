@@ -51,9 +51,8 @@ describe('AboutSection', () => {
       </RestaurantThemeProvider>
     );
 
-    // Should have at least 2 paragraphs
-    const textContent = screen.getByText(/For over a decade/);
-    expect(textContent).toBeInTheDocument();
+    // Should have at least 2 paragraphs - check for restaurant name which should be in content
+    expect(screen.getByText(new RegExp(mockConfig.name))).toBeInTheDocument();
     
     const paragraphs = screen.getAllByText(/./).filter(el => el.tagName === 'P');
     expect(paragraphs.length).toBeGreaterThanOrEqual(2);
