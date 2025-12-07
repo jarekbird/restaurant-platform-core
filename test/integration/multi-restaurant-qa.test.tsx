@@ -274,8 +274,8 @@ describe('Multi-Restaurant QA Integration Tests', () => {
 
         render(<TestRestaurantPage slug={slug} />);
 
-        // Step 1: Verify menu is displayed
-        expect(screen.getByText(restaurant.config.name)).toBeInTheDocument();
+        // Step 1: Verify menu is displayed (restaurant name may appear multiple times)
+        expect(screen.getAllByText(restaurant.config.name).length).toBeGreaterThan(0);
         menu.categories.forEach((category) => {
           expect(screen.getByText(category.name)).toBeInTheDocument();
         });
@@ -352,8 +352,9 @@ describe('Multi-Restaurant QA Integration Tests', () => {
         fireEvent.click(closeButton);
 
         await waitFor(() => {
-          const orderButtonAfter = screen.getByRole('button', { name: /^Cart$/i });
-          expect(orderButtonAfter).toBeInTheDocument();
+          // After order, cart should be empty, so button should show "Order Online" without item count
+          const orderButtonsAfter = screen.getAllByRole('button', { name: /^Order Online$/i });
+          expect(orderButtonsAfter.length).toBeGreaterThan(0);
         });
 
         // Step 9: If chat is enabled, verify it's accessible
@@ -370,7 +371,8 @@ describe('Multi-Restaurant QA Integration Tests', () => {
       testRestaurants.forEach(({ slug }) => {
         const restaurant = loadRestaurant(slug);
         render(<TestRestaurantPage slug={slug} />);
-        expect(screen.getByText(restaurant.config.name)).toBeInTheDocument();
+        // Restaurant name may appear multiple times (header and hero)
+        expect(screen.getAllByText(restaurant.config.name).length).toBeGreaterThan(0);
       });
     });
 
@@ -378,7 +380,8 @@ describe('Multi-Restaurant QA Integration Tests', () => {
       testRestaurants.forEach(({ slug }) => {
         const restaurant = loadRestaurant(slug);
         render(<TestRestaurantPage slug={slug} />);
-        expect(screen.getByText(restaurant.config.name)).toBeInTheDocument();
+        // Restaurant name may appear multiple times (header and hero)
+        expect(screen.getAllByText(restaurant.config.name).length).toBeGreaterThan(0);
       });
     });
 
@@ -387,7 +390,8 @@ describe('Multi-Restaurant QA Integration Tests', () => {
         const restaurant = loadRestaurant(slug);
         render(<TestRestaurantPage slug={slug} />);
         // Hours should be displayed in HoursAndLocation component
-        expect(screen.getByText(restaurant.config.name)).toBeInTheDocument();
+        // Restaurant name may appear multiple times (header and hero)
+        expect(screen.getAllByText(restaurant.config.name).length).toBeGreaterThan(0);
       });
     });
   });
