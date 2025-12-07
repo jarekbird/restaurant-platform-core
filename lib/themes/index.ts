@@ -115,6 +115,28 @@ export const themes: Record<string, Theme> = {
       badge: 'rounded-full',
     },
   },
+  'modern-sushi': {
+    name: 'Modern Sushi',
+    colors: {
+      primary: 'bg-slate-800 text-white',
+      secondary: 'bg-slate-700 text-white',
+      background: 'bg-slate-50 text-gray-900',
+      surface: 'bg-white text-gray-900',
+      accent: 'bg-emerald-600 text-white',
+      text: 'text-gray-900',
+      textMuted: 'text-gray-600',
+      border: 'border-slate-200',
+    },
+    typography: {
+      heading: 'font-bold',
+      body: 'font-normal',
+    },
+    radii: {
+      card: 'rounded-lg',
+      button: 'rounded-md',
+      badge: 'rounded-full',
+    },
+  },
 };
 
 export type ThemeKey = keyof typeof themes;
