@@ -9,6 +9,7 @@ import { FeaturedItems } from '@/components/restaurant/FeaturedItems';
 import { HoursAndLocation } from '@/components/restaurant/HoursAndLocation';
 import { CallToActionBar } from '@/components/restaurant/CallToActionBar';
 import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
+import { CartProvider } from '@/components/order/CartProvider';
 import { restaurantConfigSchema, menuItemSchema } from '@/lib/schemas';
 
 describe('Restaurant Home Page Blocks', () => {
@@ -87,18 +88,22 @@ describe('Restaurant Home Page Blocks', () => {
 
     it('should render featured items title', () => {
       render(
-        <RestaurantThemeProvider themeKey="sushi-dark">
-          <FeaturedItems items={mockItems} />
-        </RestaurantThemeProvider>
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="sushi-dark">
+            <FeaturedItems items={mockItems} />
+          </RestaurantThemeProvider>
+        </CartProvider>
       );
       expect(screen.getByText('Featured Items')).toBeInTheDocument();
     });
 
     it('should render all featured items', () => {
       render(
-        <RestaurantThemeProvider themeKey="sushi-dark">
-          <FeaturedItems items={mockItems} />
-        </RestaurantThemeProvider>
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="sushi-dark">
+            <FeaturedItems items={mockItems} />
+          </RestaurantThemeProvider>
+        </CartProvider>
       );
       expect(screen.getByText('Pizza')).toBeInTheDocument();
       expect(screen.getByText('Pasta')).toBeInTheDocument();
@@ -106,18 +111,22 @@ describe('Restaurant Home Page Blocks', () => {
 
     it('should render custom title when provided', () => {
       render(
-        <RestaurantThemeProvider themeKey="sushi-dark">
-          <FeaturedItems items={mockItems} title="Today's Specials" />
-        </RestaurantThemeProvider>
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="sushi-dark">
+            <FeaturedItems items={mockItems} title="Today's Specials" />
+          </RestaurantThemeProvider>
+        </CartProvider>
       );
       expect(screen.getByText("Today's Specials")).toBeInTheDocument();
     });
 
     it('should return null when items array is empty', () => {
       const { container } = render(
-        <RestaurantThemeProvider themeKey="sushi-dark">
-          <FeaturedItems items={[]} />
-        </RestaurantThemeProvider>
+        <CartProvider>
+          <RestaurantThemeProvider themeKey="sushi-dark">
+            <FeaturedItems items={[]} />
+          </RestaurantThemeProvider>
+        </CartProvider>
       );
       expect(container.firstChild).toBeNull();
     });

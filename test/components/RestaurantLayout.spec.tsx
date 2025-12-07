@@ -42,7 +42,7 @@ describe('RestaurantLayout', () => {
       </CartProvider>
     );
     
-    const header = screen.getByRole('banner');
+    const header = screen.getByText('Test Restaurant').closest('header');
     expect(header).toBeInTheDocument();
     expect(screen.getByText('Test Restaurant')).toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe('RestaurantLayout', () => {
       </CartProvider>
     );
     
-    const footer = screen.getByRole('contentinfo');
+    const footer = screen.getByText(/123 Test St/i).closest('footer');
     expect(footer).toBeInTheDocument();
     expect(screen.getByText(/123 Test St/i)).toBeInTheDocument();
     expect(screen.getByText(/Test City, TS 12345/i)).toBeInTheDocument();
@@ -97,7 +97,7 @@ describe('RestaurantLayout', () => {
     expect(screen.getByText(/test@example.com/i)).toBeInTheDocument();
   });
 
-  it('should render navigation stub in header', () => {
+  it('should render Order Online button in header', () => {
     render(
       <CartProvider>
         <RestaurantLayout config={mockConfig}>
@@ -106,15 +106,11 @@ describe('RestaurantLayout', () => {
       </CartProvider>
     );
     
-    const header = screen.getByRole('banner');
+    const header = screen.getByText('Test Restaurant').closest('header');
     expect(header).toBeInTheDocument();
     
-    // Check navigation items are in the header
-    const nav = header.querySelector('nav');
-    expect(nav).toBeInTheDocument();
-    expect(nav?.textContent).toContain('Menu');
-    expect(nav?.textContent).toContain('About');
-    expect(nav?.textContent).toContain('Contact');
+    // Check Order Online button is in the header
+    expect(screen.getByText('Order Online')).toBeInTheDocument();
   });
 });
 
