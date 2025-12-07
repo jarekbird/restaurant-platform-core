@@ -220,6 +220,16 @@ function RestaurantLayoutContent({
           </div>
         </footer>
       </div>
+      {/* Mobile sticky bottom bar */}
+      <div className={cn('sticky bottom-0 z-40 border-t md:hidden', theme.colors.background, theme.colors.border)}>
+        <div className="px-4 py-3">
+          <OrderButton
+            onClick={onCartToggle}
+            label="Order Online"
+            itemCount={itemCount}
+          />
+        </div>
+      </div>
       <CartDrawer
         isOpen={isCartOpen}
         onClose={onCartClose}
