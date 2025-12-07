@@ -20,6 +20,11 @@ vi.mock('next/navigation', () => ({
 // Mock analytics
 vi.mock('@/lib/analytics/events', () => ({
   trackViewRestaurant: vi.fn(),
+  trackViewMenuCategory: vi.fn(),
+  trackAddToCart: vi.fn(),
+  trackStartCheckout: vi.fn(),
+  trackCompleteOrder: vi.fn(),
+  trackJoinVip: vi.fn(),
 }));
 
 describe('PreviewPage', () => {

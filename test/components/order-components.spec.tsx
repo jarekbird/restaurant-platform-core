@@ -7,6 +7,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CartDrawer } from '@/components/order/CartDrawer';
 import { OrderButton } from '@/components/order/OrderButton';
 import { CheckoutForm } from '@/components/order/CheckoutForm';
+import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 
 describe('Order Components', () => {
   describe('CartDrawer', () => {
@@ -73,18 +74,30 @@ describe('Order Components', () => {
 
   describe('OrderButton', () => {
     it('should render with default label', () => {
-      render(<OrderButton onClick={() => {}} />);
+      render(
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <OrderButton onClick={() => {}} />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Order Now')).toBeInTheDocument();
     });
 
     it('should render with custom label', () => {
-      render(<OrderButton onClick={() => {}} label="Add to Cart" />);
+      render(
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <OrderButton onClick={() => {}} label="Add to Cart" />
+        </RestaurantThemeProvider>
+      );
       expect(screen.getByText('Add to Cart')).toBeInTheDocument();
     });
 
     it('should call onClick when clicked', () => {
       const handleClick = vi.fn();
-      render(<OrderButton onClick={handleClick} />);
+      render(
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <OrderButton onClick={handleClick} />
+        </RestaurantThemeProvider>
+      );
       const button = screen.getByText('Order Now');
       fireEvent.click(button);
       expect(handleClick).toHaveBeenCalledTimes(1);
@@ -92,7 +105,9 @@ describe('Order Components', () => {
 
     it('should accept and apply className prop', () => {
       const { container } = render(
-        <OrderButton onClick={() => {}} className="custom-class" />
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <OrderButton onClick={() => {}} className="custom-class" />
+        </RestaurantThemeProvider>
       );
       const button = container.querySelector('button');
       expect(button).toHaveClass('custom-class');
