@@ -146,5 +146,30 @@ describe('HeroSection Theme Usage', () => {
     button.click();
     expect(handleOrderClick).toHaveBeenCalledTimes(1);
   });
+
+  it('should have accessible button with ARIA label', () => {
+    const configWithOrdering = { ...mockConfig, orderOnlineEnabled: true };
+    const { getByLabelText } = render(
+      <RestaurantThemeProvider themeKey="warm-pizza">
+        <HeroSection config={configWithOrdering} />
+      </RestaurantThemeProvider>
+    );
+
+    const button = getByLabelText('Order Online');
+    expect(button).toBeInTheDocument();
+  });
+
+  it('should have responsive text sizing classes', () => {
+    const { container } = render(
+      <RestaurantThemeProvider themeKey="warm-pizza">
+        <HeroSection config={mockConfig} />
+      </RestaurantThemeProvider>
+    );
+
+    const h1 = container.querySelector('h1');
+    expect(h1?.className).toContain('text-4xl');
+    expect(h1?.className).toContain('md:text-5xl');
+    expect(h1?.className).toContain('lg:text-6xl');
+  });
 });
 
