@@ -17,6 +17,11 @@ vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
 }));
 
+// Mock analytics
+vi.mock('@/lib/analytics/events', () => ({
+  trackViewRestaurant: vi.fn(),
+}));
+
 describe('PreviewPage', () => {
   const mockConfig = {
     id: 'test-restaurant',
@@ -97,7 +102,7 @@ describe('PreviewPage', () => {
     const page = await PreviewPage({ params });
     const { container } = render(page);
 
-    expect(container.textContent).toContain('Order Now');
+    expect(container.textContent).toContain('Order Online');
   });
 
   it('should not render order button when orderOnlineEnabled is false', async () => {

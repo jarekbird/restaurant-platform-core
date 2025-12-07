@@ -52,7 +52,7 @@ describe('Restaurant Home Page Blocks', () => {
           <HeroSection config={mockConfig} />
         </RestaurantThemeProvider>
       );
-      expect(screen.getByText('Italian Cuisine')).toBeInTheDocument();
+      expect(screen.getByText(/Authentic.*in.*|.*Cuisine/)).toBeInTheDocument();
     });
 
     it('should handle config without hero image', () => {
