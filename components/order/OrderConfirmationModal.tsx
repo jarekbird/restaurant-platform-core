@@ -25,6 +25,11 @@ interface OrderConfirmationModalProps {
  * OrderConfirmationModal component
  * Displays order confirmation with order summary
  * Includes focus trap and keyboard accessibility
+ * 
+ * PROTOTYPE CONSTRAINT: This displays mock/demo orders only.
+ * - No real order processing occurred
+ * - Order data is from console logs only
+ * - In production, this would show real order confirmation from backend
  */
 export function OrderConfirmationModal({
   isOpen,
@@ -156,4 +161,17 @@ export function OrderConfirmationModal({
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 

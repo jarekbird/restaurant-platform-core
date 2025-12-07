@@ -41,12 +41,27 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
     updateQuantity(itemId, quantity);
   };
   
+  /**
+   * Handle order placement (MOCK/DEMO-ONLY)
+   * 
+   * PROTOTYPE CONSTRAINT: This is a demo-only implementation.
+   * - No payment gateway integration (Stripe, PayPal, etc.)
+   * - No POS integration
+   * - No backend persistence or live order routing
+   * - Orders are logged to console only
+   * 
+   * In a production system, this would:
+   * - Process payment via payment gateway
+   * - Send order to POS system
+   * - Persist order to database
+   * - Send confirmation email/SMS
+   */
   const handlePlaceOrder = (order: {
     items: typeof items;
     total: number;
     customer: { name: string; phone: string; notes?: string };
   }) => {
-    // Log order for demo purposes
+    // Log order for demo purposes (MOCK-ONLY - no real processing)
     console.log('Order placed:', order);
     
     // Clear cart after order

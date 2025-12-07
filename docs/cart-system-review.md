@@ -216,3 +216,16 @@ CartProvider (context wrapper)
 4. Update layout to be cart-aware (TASK-2.1.5)
 5. Integrate components into preview route
 
+
+
+
+
+
+
+
+
+
+
+
+
+

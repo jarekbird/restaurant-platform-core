@@ -53,6 +53,15 @@ export function CartDrawer({
   } | null>(null);
   const toast = useOptionalToast();
   
+  /**
+   * Handle checkout submission (MOCK/DEMO-ONLY)
+   * 
+   * PROTOTYPE CONSTRAINT: This is a demo-only implementation.
+   * - No payment gateway integration
+   * - No POS integration
+   * - No backend persistence
+   * - Orders are logged to console and shown in confirmation modal only
+   */
   const handleCheckout = (formData: { name: string; phone: string; notes?: string }) => {
     const order = {
       items,
@@ -60,10 +69,10 @@ export function CartDrawer({
       customer: formData,
     };
     
-    // Log order for demo purposes
+    // Log order for demo purposes (MOCK-ONLY - no real processing)
     console.log('Order placed:', order);
     
-    // Call onPlaceOrder if provided
+    // Call onPlaceOrder if provided (also mock-only)
     if (onPlaceOrder) {
       onPlaceOrder(order);
     }

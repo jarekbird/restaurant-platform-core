@@ -8,6 +8,19 @@ import { ChatAssistantWrapper } from '@/components/chat/ChatAssistantWrapper';
 import { ToastProvider } from '@/components/ui/ToastProvider';
 import { notFound } from 'next/navigation';
 
+/**
+ * PROTOTYPE-ONLY: This is a demo/preview application.
+ * 
+ * Phase 3 Constraints:
+ * - No payment gateway integration (Stripe, PayPal, etc.)
+ * - No POS integration
+ * - No live order routing or backend persistence
+ * - All orders are mock/demo-only (console logs, confirmation modals, analytics events)
+ * - Cart state is client-side only (localStorage)
+ * 
+ * This application serves as a prototype/preview tool, not a production ordering platform.
+ */
+
 interface PreviewPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -15,6 +28,9 @@ interface PreviewPageProps {
 /**
  * Preview page for restaurant
  * Loads restaurant data and renders preview layout
+ * 
+ * NOTE: All ordering flows in this preview are mock/demo-only.
+ * No real payment processing or order persistence occurs.
  */
 export default async function PreviewPage({ params }: PreviewPageProps) {
   const { slug } = await params;

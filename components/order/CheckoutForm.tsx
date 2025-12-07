@@ -17,7 +17,12 @@ interface CheckoutFormProps {
 /**
  * CheckoutForm component
  * Basic form with name, phone, notes fields and onSubmit callback
- * No backend - just calls the provided callback
+ * 
+ * PROTOTYPE CONSTRAINT: This is a demo-only form.
+ * - No payment processing
+ * - No backend submission
+ * - Just calls the provided callback (which is mock-only)
+ * - In production, this would integrate with payment gateway and backend API
  */
 export function CheckoutForm({ onSubmit, className }: CheckoutFormProps) {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
