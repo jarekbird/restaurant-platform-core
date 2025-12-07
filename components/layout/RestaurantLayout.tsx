@@ -2,10 +2,11 @@
 
 import { ReactNode, useState } from 'react';
 import { RestaurantConfig } from '@/lib/schemas/restaurant';
-import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
+import { RestaurantThemeProvider, useTheme } from '@/components/theme/ThemeProvider';
 import { useCartContext } from '@/components/order/CartProvider';
 import { OrderButton } from '@/components/order/OrderButton';
 import { CartDrawer } from '@/components/order/CartDrawer';
+import { cn } from '@/lib/utils';
 
 interface RestaurantLayoutProps {
   config: RestaurantConfig;
@@ -86,73 +87,126 @@ export function RestaurantLayout({ config, children }: RestaurantLayoutProps) {
 
   return (
     <RestaurantThemeProvider themeKey={config.theme}>
-      <div className="flex min-h-screen flex-col">
-      {/* Header with cart button */}
-      <header className="sticky top-0 z-50 min-h-[72px] flex items-center border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
-        <div className="relative flex w-full items-center justify-between px-4 py-4">
-          {/* Cart Button on the far right - positioned at absolute right edge */}
-          <div className="absolute right-0 flex items-center pr-4">
-            <OrderButton
-              onClick={handleCartToggle}
-              label="Cart"
-              itemCount={itemCount}
-            />
-          </div>
-        </div>
-      </header>
-
-      {/* Main area that renders children */}
-      <main className="flex-1">
+      <RestaurantLayoutContent
+        config={config}
+        itemCount={itemCount}
+        items={items}
+        isCartOpen={isCartOpen}
+        onCartToggle={handleCartToggle}
+        onCartClose={handleCartClose}
+        onRemoveItem={handleRemoveItem}
+        onUpdateQuantity={handleUpdateQuantity}
+        onPlaceOrder={handlePlaceOrder}
+        formatHours={formatHours}
+      >
         {children}
-      </main>
+      </RestaurantLayoutContent>
+    </RestaurantThemeProvider>
+  );
+}
 
-      {/* Footer with address, hours, and phone */}
-      <footer className="border-t border-gray-200 bg-white dark:border-gray-800 dark:bg-black">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {/* Address */}
-            <div>
-              <h3 className="mb-2 text-sm font-semibold">Address</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {config.address}
-                <br />
-                {config.city}, {config.state} {config.zip}
-              </p>
-            </div>
+interface RestaurantLayoutContentProps {
+  config: RestaurantConfig;
+  itemCount: number;
+  items: Array<{ id: string; name: string; price: number; quantity: number }>;
+  isCartOpen: boolean;
+  onCartToggle: () => void;
+  onCartClose: () => void;
+  onRemoveItem: (itemId: string) => void;
+  onUpdateQuantity: (itemId: string, quantity: number) => void;
+  onPlaceOrder: (order: {
+    items: typeof items;
+    total: number;
+    customer: { name: string; phone: string; notes?: string };
+  }) => void;
+  formatHours: (hours: RestaurantConfig['hours']) => string;
+  children: ReactNode;
+}
 
-            {/* Hours */}
-            <div>
-              <h3 className="mb-2 text-sm font-semibold">Hours</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {formatHours(config.hours)}
-              </p>
-            </div>
+function RestaurantLayoutContent({
+  config,
+  itemCount,
+  items,
+  isCartOpen,
+  onCartToggle,
+  onCartClose,
+  onRemoveItem,
+  onUpdateQuantity,
+  onPlaceOrder,
+  formatHours,
+  children,
+}: RestaurantLayoutContentProps) {
+  const theme = useTheme();
 
-            {/* Phone */}
-            <div>
-              <h3 className="mb-2 text-sm font-semibold">Contact</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {config.phone}
-              </p>
-              {config.email && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {config.email}
-                </p>
-              )}
+  return (
+    <>
+      <div className="flex min-h-screen flex-col">
+        {/* Header with cart button */}
+        <header className={cn('sticky top-0 z-50 min-h-[72px] flex items-center border-b', theme.colors.background, theme.colors.border)}>
+          <div className="relative flex w-full items-center justify-between px-4 py-4">
+            {/* Cart Button on the far right - positioned at absolute right edge */}
+            <div className="absolute right-0 flex items-center pr-4">
+              <OrderButton
+                onClick={onCartToggle}
+                label="Cart"
+                itemCount={itemCount}
+              />
             </div>
           </div>
-        </div>
-      </footer>
-    </div>
-    <CartDrawer
-      isOpen={isCartOpen}
-      onClose={handleCartClose}
-      items={items}
-      onRemoveItem={handleRemoveItem}
-      onUpdateQuantity={handleUpdateQuantity}
-      onPlaceOrder={handlePlaceOrder}
-    />
-    </RestaurantThemeProvider>
+        </header>
+
+        {/* Main area that renders children */}
+        <main className="flex-1">
+          {children}
+        </main>
+
+        {/* Footer with address, hours, and phone */}
+        <footer className={cn('border-t', theme.colors.background, theme.colors.border)}>
+          <div className="container mx-auto px-4 py-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {/* Address */}
+              <div>
+                <h3 className={cn('mb-2 text-sm font-semibold', theme.colors.text)}>Address</h3>
+                <p className={cn('text-sm', theme.colors.textMuted)}>
+                  {config.address}
+                  <br />
+                  {config.city}, {config.state} {config.zip}
+                </p>
+              </div>
+
+              {/* Hours */}
+              <div>
+                <h3 className={cn('mb-2 text-sm font-semibold', theme.colors.text)}>Hours</h3>
+                <p className={cn('text-sm', theme.colors.textMuted)}>
+                  {formatHours(config.hours)}
+                </p>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <h3 className={cn('mb-2 text-sm font-semibold', theme.colors.text)}>Contact</h3>
+                <p className={cn('text-sm', theme.colors.textMuted)}>
+                  {config.phone}
+                </p>
+                {config.email && (
+                  <p className={cn('text-sm', theme.colors.textMuted)}>
+                    {config.email}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={onCartClose}
+        items={items}
+        onRemoveItem={onRemoveItem}
+        onUpdateQuantity={onUpdateQuantity}
+        onPlaceOrder={onPlaceOrder}
+      />
+    </>
   );
 }
 
