@@ -331,10 +331,15 @@ describe('Multi-Restaurant QA Integration Tests', () => {
         fireEvent.click(submitButton);
 
         // Step 7: Verify order confirmation
-        // Try multiple ways to find the confirmation text
+        // Wait for the modal to appear first, then check for text
         await waitFor(
           () => {
-            // Try exact match first
+            // First, check if the modal dialog is present
+            const modal = screen.queryByRole('dialog');
+            if (!modal) {
+              throw new Error('Order confirmation modal dialog not found');
+            }
+            // Then check for the confirmation text
             const exactMatch = screen.queryByText('Order Confirmed!');
             if (exactMatch) {
               expect(exactMatch).toBeInTheDocument();
@@ -346,13 +351,8 @@ describe('Multi-Restaurant QA Integration Tests', () => {
               expect(partialMatch).toBeInTheDocument();
               return;
             }
-            // Try finding the modal by its role
-            const modal = screen.queryByRole('dialog', { name: /order confirmation/i });
-            if (modal) {
-              expect(modal).toBeInTheDocument();
-              return;
-            }
-            throw new Error('Order confirmation modal not found');
+            // If modal exists but text not found, that's still a problem
+            throw new Error('Order confirmation text not found in modal');
           },
           { timeout: 10000 } // Increase timeout to 10 seconds
         );
