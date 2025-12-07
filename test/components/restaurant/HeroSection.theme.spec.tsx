@@ -4,7 +4,7 @@
  * Verifies that HeroSection uses theme tokens correctly with different themes.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { HeroSection } from '@/components/restaurant/HeroSection';
 import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
@@ -88,6 +88,63 @@ describe('HeroSection Theme Usage', () => {
 
     const cuisineText = container.querySelector('p');
     expect(cuisineText?.className).toContain('text-');
+  });
+
+  it('should render tagline when both cuisine and city are present', () => {
+    const configWithCity = { ...mockConfig, city: 'Test City' };
+    const { getByText } = render(
+      <RestaurantThemeProvider themeKey="warm-pizza">
+        <HeroSection config={configWithCity} />
+      </RestaurantThemeProvider>
+    );
+
+    expect(getByText(/Authentic.*in Test City/)).toBeInTheDocument();
+  });
+
+  it('should not render tagline when city is missing', () => {
+    const configWithoutCity = { ...mockConfig, city: '' };
+    const { queryByText } = render(
+      <RestaurantThemeProvider themeKey="warm-pizza">
+        <HeroSection config={configWithoutCity} />
+      </RestaurantThemeProvider>
+    );
+
+    expect(queryByText(/Authentic.*in/)).not.toBeInTheDocument();
+  });
+
+  it('should render Order Online button when orderOnlineEnabled is true', () => {
+    const configWithOrdering = { ...mockConfig, orderOnlineEnabled: true };
+    const { getByText } = render(
+      <RestaurantThemeProvider themeKey="warm-pizza">
+        <HeroSection config={configWithOrdering} />
+      </RestaurantThemeProvider>
+    );
+
+    expect(getByText('Order Online')).toBeInTheDocument();
+  });
+
+  it('should not render Order Online button when orderOnlineEnabled is false', () => {
+    const { queryByText } = render(
+      <RestaurantThemeProvider themeKey="warm-pizza">
+        <HeroSection config={mockConfig} />
+      </RestaurantThemeProvider>
+    );
+
+    expect(queryByText('Order Online')).not.toBeInTheDocument();
+  });
+
+  it('should call onOrderClick when button is clicked', () => {
+    const handleOrderClick = vi.fn();
+    const configWithOrdering = { ...mockConfig, orderOnlineEnabled: true };
+    const { getByText } = render(
+      <RestaurantThemeProvider themeKey="warm-pizza">
+        <HeroSection config={configWithOrdering} onOrderClick={handleOrderClick} />
+      </RestaurantThemeProvider>
+    );
+
+    const button = getByText('Order Online');
+    button.click();
+    expect(handleOrderClick).toHaveBeenCalledTimes(1);
   });
 });
 
