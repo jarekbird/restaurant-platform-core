@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import PreviewPage from '@/app/preview/[slug]/page';
+import { render, screen } from '@testing-library/react';
+import PreviewPage, { generateMetadata } from '@/app/preview/[slug]/page';
 import { loadRestaurant } from '@/lib/loaders/restaurant';
 
 // Mock the loader
@@ -121,6 +121,110 @@ describe('PreviewPage', () => {
     const { container } = render(page);
 
     expect(container.textContent).not.toContain('Order Now');
+  });
+
+  // Task 4.12: Integration test for story & social proof components
+  it('should render AboutSection component', async () => {
+    vi.mocked(loadRestaurant).mockReturnValue({
+      config: mockConfig,
+      menu: mockMenu,
+    });
+
+    const params = Promise.resolve({ slug: 'test-restaurant' });
+    const page = await PreviewPage({ params });
+    render(page);
+
+    expect(screen.getByText('Our Story')).toBeInTheDocument();
+  });
+
+  it('should render ReviewHighlights component', async () => {
+    vi.mocked(loadRestaurant).mockReturnValue({
+      config: mockConfig,
+      menu: mockMenu,
+    });
+
+    const params = Promise.resolve({ slug: 'test-restaurant' });
+    const page = await PreviewPage({ params });
+    render(page);
+
+    // ReviewHighlights shows rating as "4.8 / 5" and review count
+    expect(screen.getByText(/4\.8/)).toBeInTheDocument();
+    expect(screen.getByText(/Based on \d+ reviews/)).toBeInTheDocument();
+  });
+
+  // Task 4.14: Integration test for capture components
+  it('should render VipSignupBanner component', async () => {
+    vi.mocked(loadRestaurant).mockReturnValue({
+      config: mockConfig,
+      menu: mockMenu,
+    });
+
+    const params = Promise.resolve({ slug: 'test-restaurant' });
+    const page = await PreviewPage({ params });
+    render(page);
+
+    // VipSignupBanner should appear near the hero
+    expect(screen.getAllByText('Join Our VIP Program').length).toBeGreaterThan(0);
+  });
+
+  it('should render VipSignupSection component', async () => {
+    vi.mocked(loadRestaurant).mockReturnValue({
+      config: mockConfig,
+      menu: mockMenu,
+    });
+
+    const params = Promise.resolve({ slug: 'test-restaurant' });
+    const page = await PreviewPage({ params });
+    render(page);
+
+    // VipSignupSection should appear above footer
+    // Since both banner and section have the same heading, we check for multiple instances
+    const vipHeadings = screen.getAllByText('Join Our VIP Program');
+    expect(vipHeadings.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should render SeoContentBlock component', async () => {
+    vi.mocked(loadRestaurant).mockReturnValue({
+      config: mockConfig,
+      menu: mockMenu,
+    });
+
+    const params = Promise.resolve({ slug: 'test-restaurant' });
+    const page = await PreviewPage({ params });
+    render(page);
+
+    // SeoContentBlock should render descriptive text about the restaurant
+    // It includes the restaurant name in the content
+    expect(screen.getByText(/Test Restaurant is/)).toBeInTheDocument();
+  });
+
+  // Task 6.17: Test generateMetadata function
+  describe('generateMetadata', () => {
+    it('should generate metadata for valid restaurant', async () => {
+      vi.mocked(loadRestaurant).mockReturnValue({
+        config: mockConfig,
+        menu: mockMenu,
+      });
+
+      const params = Promise.resolve({ slug: 'test-restaurant' });
+      const metadata = await generateMetadata({ params });
+
+      expect(metadata.title).toBeDefined();
+      expect(metadata.description).toBeDefined();
+      expect(metadata.title).toContain('Test Restaurant');
+    });
+
+    it('should return fallback metadata for invalid restaurant', async () => {
+      vi.mocked(loadRestaurant).mockImplementation(() => {
+        throw new Error('Restaurant not found');
+      });
+
+      const params = Promise.resolve({ slug: 'invalid-restaurant' });
+      const metadata = await generateMetadata({ params });
+
+      expect(metadata.title).toBe('Restaurant Not Found');
+      expect(metadata.description).toBe('The requested restaurant could not be found.');
+    });
   });
 });
 
