@@ -41,8 +41,13 @@ export function HeroSection({ config, className }: HeroSectionProps) {
           <h1 className={cn('text-4xl font-bold md:text-5xl lg:text-6xl', theme.colors.text, theme.typography.heading)}>
             {config.name}
           </h1>
-          {config.cuisine && (
-            <p className={cn('mt-4 text-xl md:text-2xl', theme.colors.textMuted)}>
+          {config.cuisine && config.city && (
+            <p className={cn('mt-4 text-xl md:text-2xl', theme.colors.textMuted, theme.typography.body)}>
+              Authentic {config.cuisine} in {config.city}
+            </p>
+          )}
+          {config.cuisine && !config.city && (
+            <p className={cn('mt-4 text-xl md:text-2xl', theme.colors.textMuted, theme.typography.body)}>
               {config.cuisine} Cuisine
             </p>
           )}
