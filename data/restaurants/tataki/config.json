@@ -18,7 +18,7 @@
     "sun": "12:00-20:00"
   },
   "cuisine": "Japanese Sushi",
-  "theme": "sushi-dark",
+  "theme": "modern-sushi",
   "heroImage": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200",
   "logo": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400",
   "orderOnlineEnabled": true

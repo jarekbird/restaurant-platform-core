@@ -17,6 +17,6 @@
     "sun": "12:00-20:00"
   },
   "cuisine": "American",
-  "theme": "sushi-dark",
+  "theme": "warm-pizza",
   "orderOnlineEnabled": false
 }
