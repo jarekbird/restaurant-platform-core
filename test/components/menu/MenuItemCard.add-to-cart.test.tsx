@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MenuItemCard } from '@/components/menu/MenuItemCard';
 import { CartProvider } from '@/components/order/CartProvider';
+import { RestaurantThemeProvider } from '@/components/theme/ThemeProvider';
 import { menuItemSchema } from '@/lib/schemas/menu';
 
 describe('MenuItemCard - Add to Cart', () => {
@@ -16,7 +17,9 @@ describe('MenuItemCard - Add to Cart', () => {
   it('should display Add to Cart button', () => {
     render(
       <CartProvider>
-        <MenuItemCard item={mockItem} />
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
       </CartProvider>
     );
     
@@ -27,7 +30,9 @@ describe('MenuItemCard - Add to Cart', () => {
   it('should add item to cart when button is clicked', () => {
     render(
       <CartProvider>
-        <MenuItemCard item={mockItem} />
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
       </CartProvider>
     );
     
@@ -41,7 +46,9 @@ describe('MenuItemCard - Add to Cart', () => {
   it('should have proper ARIA label', () => {
     render(
       <CartProvider>
-        <MenuItemCard item={mockItem} />
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
       </CartProvider>
     );
     
@@ -52,7 +59,9 @@ describe('MenuItemCard - Add to Cart', () => {
   it('should render item information correctly', () => {
     render(
       <CartProvider>
-        <MenuItemCard item={mockItem} />
+        <RestaurantThemeProvider themeKey="warm-pizza">
+          <MenuItemCard item={mockItem} />
+        </RestaurantThemeProvider>
       </CartProvider>
     );
     
