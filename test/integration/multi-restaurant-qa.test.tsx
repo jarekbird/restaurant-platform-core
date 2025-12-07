@@ -73,8 +73,8 @@ describe('Multi-Restaurant QA Integration Tests', () => {
 
         render(<TestRestaurantPage slug={slug} />);
 
-        // Verify restaurant name is displayed
-        expect(screen.getByText(config.name)).toBeInTheDocument();
+        // Verify restaurant name is displayed (may appear multiple times - header and hero)
+        expect(screen.getAllByText(config.name).length).toBeGreaterThan(0);
 
         // Verify menu categories are displayed
         menu.categories.forEach((category) => {
@@ -101,8 +101,8 @@ describe('Multi-Restaurant QA Integration Tests', () => {
 
         render(<TestRestaurantPage slug={slug} />);
 
-        // Verify restaurant name
-        expect(screen.getByText(config.name)).toBeInTheDocument();
+        // Verify restaurant name (may appear multiple times - header and hero)
+        expect(screen.getAllByText(config.name).length).toBeGreaterThan(0);
 
         // Verify address information is displayed (use getAllByText as address may appear multiple times)
         const addressElements = screen.getAllByText(new RegExp(config.address));
@@ -130,22 +130,23 @@ describe('Multi-Restaurant QA Integration Tests', () => {
         // Add first item to cart
         fireEvent.click(addButtons[0]);
         await waitFor(() => {
-          const orderButton = screen.getByRole('button', { name: /Cart \(1 items?\)/i });
-          expect(orderButton).toBeInTheDocument();
+          const orderButtons = screen.getAllByRole('button', { name: /Order Online \(1 items?\)/i });
+          expect(orderButtons.length).toBeGreaterThan(0);
         });
 
         // Add second item if available
         if (addButtons.length > 1) {
           fireEvent.click(addButtons[1]);
           await waitFor(() => {
-            const orderButton = screen.getByRole('button', { name: /Cart \(2 items?\)/i });
-            expect(orderButton).toBeInTheDocument();
+            const orderButtons = screen.getAllByRole('button', { name: /Order Online \(2 items?\)/i });
+            expect(orderButtons.length).toBeGreaterThan(0);
           });
         }
 
-        // Open cart drawer
-        const orderButton = screen.getByRole('button', { name: /Cart \(\d+ items?\)/i });
-        fireEvent.click(orderButton);
+        // Open cart drawer (use first button - header button)
+        const orderButtons = screen.getAllByRole('button', { name: /Order Online \(\d+ items?\)/i });
+        expect(orderButtons.length).toBeGreaterThan(0);
+        fireEvent.click(orderButtons[0]);
 
         await waitFor(() => {
           expect(screen.getByText('Cart')).toBeInTheDocument();
@@ -171,13 +172,14 @@ describe('Multi-Restaurant QA Integration Tests', () => {
         fireEvent.click(addButtons[0]);
 
         await waitFor(() => {
-          const orderButton = screen.getByRole('button', { name: /Cart \(1 items?\)/i });
-          expect(orderButton).toBeInTheDocument();
+          const orderButtons = screen.getAllByRole('button', { name: /Order Online \(1 items?\)/i });
+          expect(orderButtons.length).toBeGreaterThan(0);
         });
 
-        // Open cart
-        const orderButton = screen.getByRole('button', { name: /Cart \(1 items?\)/i });
-        fireEvent.click(orderButton);
+        // Open cart (use first button - header button)
+        const orderButtons = screen.getAllByRole('button', { name: /Order Online \(1 items?\)/i });
+        expect(orderButtons.length).toBeGreaterThan(0);
+        fireEvent.click(orderButtons[0]);
 
         await waitFor(() => {
           expect(screen.getByText('Cart')).toBeInTheDocument();
@@ -188,8 +190,8 @@ describe('Multi-Restaurant QA Integration Tests', () => {
         if (increaseButtons.length > 0) {
           fireEvent.click(increaseButtons[0]);
           await waitFor(() => {
-            const updatedOrderButton = screen.getByRole('button', { name: /Cart \(2 items?\)/i });
-            expect(updatedOrderButton).toBeInTheDocument();
+            const updatedOrderButtons = screen.getAllByRole('button', { name: /Order Online \(2 items?\)/i });
+            expect(updatedOrderButtons.length).toBeGreaterThan(0);
           });
         }
       });
@@ -284,13 +286,14 @@ describe('Multi-Restaurant QA Integration Tests', () => {
 
         fireEvent.click(addButtons[0]);
         await waitFor(() => {
-          const orderButton = screen.getByRole('button', { name: /Cart \(1 items?\)/i });
-          expect(orderButton).toBeInTheDocument();
+          const orderButtons = screen.getAllByRole('button', { name: /Order Online \(1 items?\)/i });
+          expect(orderButtons.length).toBeGreaterThan(0);
         });
 
-        // Step 3: Open cart and verify items
-        const orderButton = screen.getByRole('button', { name: /Cart \(1 items?\)/i });
-        fireEvent.click(orderButton);
+        // Step 3: Open cart and verify items (use first button - header button)
+        const orderButtons = screen.getAllByRole('button', { name: /Order Online \(1 items?\)/i });
+        expect(orderButtons.length).toBeGreaterThan(0);
+        fireEvent.click(orderButtons[0]);
 
         await waitFor(() => {
           expect(screen.getByText('Cart')).toBeInTheDocument();
