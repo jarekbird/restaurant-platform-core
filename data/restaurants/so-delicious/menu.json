@@ -11,7 +11,7 @@
         {
           "id": "edamame",
           "name": "Edamame",
-          "description": "Steamed soybeans with sea salt",
+          "description": "Fresh young soybeans steamed to perfection and lightly seasoned with sea salt. A healthy and satisfying start to your meal",
           "price": 6.99,
           "image": "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=800",
           "tags": ["vegetarian", "healthy"]
@@ -19,7 +19,7 @@
         {
           "id": "gyoza",
           "name": "Pork Gyoza",
-          "description": "Pan-fried pork dumplings with soy dipping sauce",
+          "description": "Crispy pan-fried Japanese dumplings filled with savory pork and vegetables, served with our house soy dipping sauce",
           "price": 8.99,
           "image": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=800",
           "tags": ["popular"]
@@ -34,7 +34,7 @@
         {
           "id": "california-roll",
           "name": "California Roll",
-          "description": "Crab, avocado, and cucumber",
+          "description": "A classic favorite featuring fresh crab, creamy avocado, and crisp cucumber, rolled in nori and sushi rice",
           "price": 9.99,
           "image": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800",
           "tags": ["popular", "vegetarian-friendly"],
@@ -59,7 +59,7 @@
         {
           "id": "spicy-tuna-roll",
           "name": "Spicy Tuna Roll",
-          "description": "Fresh tuna with spicy mayo",
+          "description": "Premium fresh tuna mixed with our signature spicy mayo, rolled to perfection for a bold and flavorful experience",
           "price": 11.99,
           "image": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800",
           "tags": ["spicy"],
@@ -91,9 +91,9 @@
         {
           "id": "teriyaki-chicken",
           "name": "Teriyaki Chicken",
-          "description": "Grilled chicken with teriyaki sauce, served with rice and vegetables",
+          "description": "Tender grilled chicken glazed with our house-made teriyaki sauce, served with steamed white rice and seasonal vegetables",
           "price": 16.99,
-          "image": "https://example.com/teriyaki-chicken.jpg",
+          "image": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=800",
           "tags": ["popular", "gluten-free"],
           "modifiers": [
             {

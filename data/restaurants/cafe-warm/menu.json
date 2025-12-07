@@ -11,7 +11,7 @@
         {
           "id": "espresso",
           "name": "Espresso",
-          "description": "Rich and bold",
+          "description": "Rich and bold single-origin espresso, perfectly extracted for a smooth, intense flavor",
           "price": 3.50,
           "image": "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=800",
           "tags": ["popular"]
@@ -19,7 +19,7 @@
         {
           "id": "cappuccino",
           "name": "Cappuccino",
-          "description": "Espresso with steamed milk",
+          "description": "Classic Italian cappuccino with perfectly steamed milk and velvety microfoam",
           "price": 4.50,
           "image": "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=800",
           "tags": ["popular"]
@@ -27,7 +27,7 @@
         {
           "id": "latte",
           "name": "Latte",
-          "description": "Espresso with steamed milk and foam",
+          "description": "Smooth espresso balanced with steamed milk and a delicate layer of foam",
           "price": 5.00,
           "image": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800",
           "modifiers": [
@@ -53,7 +53,7 @@
         {
           "id": "croissant",
           "name": "Butter Croissant",
-          "description": "Flaky and buttery",
+          "description": "Handcrafted French-style croissant with layers of buttery, flaky perfection. Baked fresh daily",
           "price": 3.75,
           "image": "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800",
           "tags": ["vegetarian"]
@@ -61,7 +61,7 @@
         {
           "id": "muffin",
           "name": "Blueberry Muffin",
-          "description": "Made with fresh blueberries",
+          "description": "Moist and tender muffin bursting with fresh blueberries and a sweet crumb topping",
           "price": 4.25,
           "image": "https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=800",
           "tags": ["vegetarian"]
