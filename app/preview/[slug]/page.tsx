@@ -2,6 +2,8 @@ import { loadRestaurant } from '@/lib/loaders/restaurant';
 import { RestaurantLayout } from '@/components/layout/RestaurantLayout';
 import { HeroSection } from '@/components/restaurant/HeroSection';
 import { MenuSectionList } from '@/components/menu/MenuSectionList';
+import { AboutSection } from '@/components/restaurant/AboutSection';
+import { ReviewHighlights } from '@/components/restaurant/ReviewHighlights';
 import { HoursAndLocation } from '@/components/restaurant/HoursAndLocation';
 import { CartProvider } from '@/components/order/CartProvider';
 import { ChatAssistantWrapper } from '@/components/chat/ChatAssistantWrapper';
@@ -44,17 +46,19 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
 
   const { config, menu } = restaurant;
 
-  return (
-    <ToastProvider>
-      <CartProvider>
-        <RestaurantLayout config={config}>
-          <HeroSection config={config} />
-          <MenuSectionList menu={menu} />
-          <HoursAndLocation config={config} />
-        </RestaurantLayout>
-        {config.orderOnlineEnabled && <ChatAssistantWrapper menu={menu} />}
-      </CartProvider>
-    </ToastProvider>
-  );
+        return (
+          <ToastProvider>
+            <CartProvider>
+              <RestaurantLayout config={config}>
+                <HeroSection config={config} />
+                <MenuSectionList menu={menu} />
+                <AboutSection config={config} />
+                <ReviewHighlights />
+                <HoursAndLocation config={config} />
+              </RestaurantLayout>
+              {config.orderOnlineEnabled && <ChatAssistantWrapper menu={menu} />}
+            </CartProvider>
+          </ToastProvider>
+        );
 }
 
