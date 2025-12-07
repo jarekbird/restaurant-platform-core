@@ -1,9 +1,11 @@
 import { loadRestaurant } from '@/lib/loaders/restaurant';
 import { RestaurantLayout } from '@/components/layout/RestaurantLayout';
 import { HeroSection } from '@/components/restaurant/HeroSection';
+import { VipSignupBanner } from '@/components/restaurant/VipSignupBanner';
 import { MenuSectionList } from '@/components/menu/MenuSectionList';
 import { AboutSection } from '@/components/restaurant/AboutSection';
 import { ReviewHighlights } from '@/components/restaurant/ReviewHighlights';
+import { VipSignupSection } from '@/components/restaurant/VipSignupSection';
 import { HoursAndLocation } from '@/components/restaurant/HoursAndLocation';
 import { CartProvider } from '@/components/order/CartProvider';
 import { ChatAssistantWrapper } from '@/components/chat/ChatAssistantWrapper';
@@ -51,9 +53,11 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
             <CartProvider>
               <RestaurantLayout config={config}>
                 <HeroSection config={config} />
+                <VipSignupBanner />
                 <MenuSectionList menu={menu} />
                 <AboutSection config={config} />
                 <ReviewHighlights />
+                <VipSignupSection />
                 <HoursAndLocation config={config} />
               </RestaurantLayout>
               {config.orderOnlineEnabled && <ChatAssistantWrapper menu={menu} />}
