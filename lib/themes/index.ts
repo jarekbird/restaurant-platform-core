@@ -137,6 +137,50 @@ export const themes: Record<string, Theme> = {
       badge: 'rounded-full',
     },
   },
+  'breakfast-diner': {
+    name: 'Breakfast Diner',
+    colors: {
+      primary: 'bg-yellow-600 text-white',
+      secondary: 'bg-yellow-700 text-white',
+      background: 'bg-yellow-50 text-gray-900',
+      surface: 'bg-white text-gray-900',
+      accent: 'bg-orange-500 text-white',
+      text: 'text-gray-900',
+      textMuted: 'text-gray-700',
+      border: 'border-yellow-200',
+    },
+    typography: {
+      heading: 'font-bold',
+      body: 'font-normal',
+    },
+    radii: {
+      card: 'rounded-lg',
+      button: 'rounded-md',
+      badge: 'rounded-full',
+    },
+  },
+  'fast-casual': {
+    name: 'Fast Casual',
+    colors: {
+      primary: 'bg-blue-600 text-white',
+      secondary: 'bg-blue-700 text-white',
+      background: 'bg-blue-50 text-gray-900',
+      surface: 'bg-white text-gray-900',
+      accent: 'bg-cyan-500 text-white',
+      text: 'text-gray-900',
+      textMuted: 'text-gray-600',
+      border: 'border-blue-200',
+    },
+    typography: {
+      heading: 'font-bold',
+      body: 'font-normal',
+    },
+    radii: {
+      card: 'rounded-lg',
+      button: 'rounded-md',
+      badge: 'rounded-full',
+    },
+  },
 };
 
 export type ThemeKey = keyof typeof themes;
